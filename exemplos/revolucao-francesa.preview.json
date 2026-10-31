@@ -1,0 +1,567 @@
+{
+  "reel": {
+    "conceito": "Por que a Revolução começou",
+    "cenas": [
+      {
+        "template": "gancho",
+        "fala": "Em 1789 o pão chegou a custar quase o salário inteiro de um trabalhador em Paris. E foi aí que a França explodiu.",
+        "titulo": "O pão que derrubou um rei",
+        "subtitulo": "França, 1789"
+      },
+      {
+        "template": "lista",
+        "fala": "Foram três motivos juntos. O Estado estava quebrado por dívidas de guerra. As colheitas ruins fizeram o preço do pão disparar. E as ideias do Iluminismo diziam que ninguém nasce com privilégio.",
+        "titulo": "Três causas ao mesmo tempo",
+        "itens": [
+          "Governo endividado",
+          "Fome e pão caro",
+          "Ideias iluministas"
+        ]
+      },
+      {
+        "template": "comparacao",
+        "fala": "A sociedade era dividida em estados. Clero e nobreza tinham privilégios e quase não pagavam impostos. O terceiro estado, a imensa maioria, pagava a conta.",
+        "titulo": "Quem pagava a conta?",
+        "esquerda": {
+          "nome": "Terceiro estado",
+          "pontos": [
+            "Burguesia e povo",
+            "Maioria da população",
+            "Pagava os impostos"
+          ]
+        },
+        "direita": {
+          "nome": "Clero e nobreza",
+          "pontos": [
+            "Minoria",
+            "Cheios de privilégios",
+            "Quase isentos"
+          ]
+        }
+      },
+      {
+        "template": "fixacao",
+        "fala": "Então guarda isso: crise econômica, mais desigualdade, mais ideias novas. Essa mistura derrubou o Antigo Regime.",
+        "frase": "Crise econômica + privilégios + Iluminismo = fim do Antigo Regime"
+      }
+    ],
+    "quiz": {
+      "pergunta": "Qual grupo sustentava quase toda a carga de impostos na França antes de 1789?",
+      "alternativas": [
+        "O clero",
+        "A nobreza",
+        "O terceiro estado",
+        "A família real"
+      ],
+      "correta": 2,
+      "explicacao": "Clero e nobreza tinham privilégios fiscais; o terceiro estado pagava a maior parte dos impostos."
+    }
+  },
+  "narracao": {
+    "audio": null,
+    "duracao": 46.57999999999998,
+    "palavras": [
+      {
+        "texto": "Em",
+        "inicio": 0.2,
+        "fim": 0.47000000000000003
+      },
+      {
+        "texto": "1789",
+        "inicio": 0.5,
+        "fim": 0.86
+      },
+      {
+        "texto": "o",
+        "inicio": 0.89,
+        "fim": 1.115
+      },
+      {
+        "texto": "pão",
+        "inicio": 1.145,
+        "fim": 1.46
+      },
+      {
+        "texto": "chegou",
+        "inicio": 1.49,
+        "fim": 1.94
+      },
+      {
+        "texto": "a",
+        "inicio": 1.97,
+        "fim": 2.195
+      },
+      {
+        "texto": "custar",
+        "inicio": 2.225,
+        "fim": 2.6750000000000003
+      },
+      {
+        "texto": "quase",
+        "inicio": 2.705,
+        "fim": 3.11
+      },
+      {
+        "texto": "o",
+        "inicio": 3.14,
+        "fim": 3.365
+      },
+      {
+        "texto": "salário",
+        "inicio": 3.395,
+        "fim": 3.89
+      },
+      {
+        "texto": "inteiro",
+        "inicio": 3.92,
+        "fim": 4.415
+      },
+      {
+        "texto": "de",
+        "inicio": 4.445,
+        "fim": 4.715
+      },
+      {
+        "texto": "um",
+        "inicio": 4.745,
+        "fim": 5.015000000000001
+      },
+      {
+        "texto": "trabalhador",
+        "inicio": 5.045,
+        "fim": 5.72
+      },
+      {
+        "texto": "em",
+        "inicio": 5.75,
+        "fim": 6.02
+      },
+      {
+        "texto": "Paris.",
+        "inicio": 6.05,
+        "fim": 6.5
+      },
+      {
+        "texto": "E",
+        "inicio": 6.85,
+        "fim": 7.074999999999999
+      },
+      {
+        "texto": "foi",
+        "inicio": 7.1049999999999995,
+        "fim": 7.42
+      },
+      {
+        "texto": "aí",
+        "inicio": 7.449999999999999,
+        "fim": 7.719999999999999
+      },
+      {
+        "texto": "que",
+        "inicio": 7.749999999999999,
+        "fim": 8.065
+      },
+      {
+        "texto": "a",
+        "inicio": 8.094999999999999,
+        "fim": 8.319999999999999
+      },
+      {
+        "texto": "França",
+        "inicio": 8.35,
+        "fim": 8.799999999999999
+      },
+      {
+        "texto": "explodiu.",
+        "inicio": 8.83,
+        "fim": 9.415
+      },
+      {
+        "texto": "Foram",
+        "inicio": 9.765,
+        "fim": 10.17
+      },
+      {
+        "texto": "três",
+        "inicio": 10.200000000000001,
+        "fim": 10.56
+      },
+      {
+        "texto": "motivos",
+        "inicio": 10.590000000000002,
+        "fim": 11.085
+      },
+      {
+        "texto": "juntos.",
+        "inicio": 11.115000000000002,
+        "fim": 11.610000000000001
+      },
+      {
+        "texto": "O",
+        "inicio": 11.960000000000003,
+        "fim": 12.185000000000002
+      },
+      {
+        "texto": "Estado",
+        "inicio": 12.215000000000003,
+        "fim": 12.665000000000003
+      },
+      {
+        "texto": "estava",
+        "inicio": 12.695000000000004,
+        "fim": 13.145000000000003
+      },
+      {
+        "texto": "quebrado",
+        "inicio": 13.175000000000004,
+        "fim": 13.715000000000003
+      },
+      {
+        "texto": "por",
+        "inicio": 13.745000000000005,
+        "fim": 14.060000000000004
+      },
+      {
+        "texto": "dívidas",
+        "inicio": 14.090000000000005,
+        "fim": 14.585000000000004
+      },
+      {
+        "texto": "de",
+        "inicio": 14.615000000000006,
+        "fim": 14.885000000000005
+      },
+      {
+        "texto": "guerra.",
+        "inicio": 14.915000000000006,
+        "fim": 15.410000000000005
+      },
+      {
+        "texto": "As",
+        "inicio": 15.760000000000007,
+        "fim": 16.03000000000001
+      },
+      {
+        "texto": "colheitas",
+        "inicio": 16.060000000000006,
+        "fim": 16.645000000000007
+      },
+      {
+        "texto": "ruins",
+        "inicio": 16.675000000000004,
+        "fim": 17.080000000000005
+      },
+      {
+        "texto": "fizeram",
+        "inicio": 17.110000000000003,
+        "fim": 17.605000000000004
+      },
+      {
+        "texto": "o",
+        "inicio": 17.635,
+        "fim": 17.860000000000003
+      },
+      {
+        "texto": "preço",
+        "inicio": 17.89,
+        "fim": 18.295
+      },
+      {
+        "texto": "do",
+        "inicio": 18.325,
+        "fim": 18.595
+      },
+      {
+        "texto": "pão",
+        "inicio": 18.625,
+        "fim": 18.94
+      },
+      {
+        "texto": "disparar.",
+        "inicio": 18.97,
+        "fim": 19.555
+      },
+      {
+        "texto": "E",
+        "inicio": 19.904999999999998,
+        "fim": 20.13
+      },
+      {
+        "texto": "as",
+        "inicio": 20.159999999999997,
+        "fim": 20.429999999999996
+      },
+      {
+        "texto": "ideias",
+        "inicio": 20.459999999999997,
+        "fim": 20.909999999999997
+      },
+      {
+        "texto": "do",
+        "inicio": 20.939999999999998,
+        "fim": 21.209999999999997
+      },
+      {
+        "texto": "Iluminismo",
+        "inicio": 21.24,
+        "fim": 21.869999999999997
+      },
+      {
+        "texto": "diziam",
+        "inicio": 21.9,
+        "fim": 22.349999999999998
+      },
+      {
+        "texto": "que",
+        "inicio": 22.38,
+        "fim": 22.695
+      },
+      {
+        "texto": "ninguém",
+        "inicio": 22.724999999999998,
+        "fim": 23.22
+      },
+      {
+        "texto": "nasce",
+        "inicio": 23.249999999999996,
+        "fim": 23.654999999999998
+      },
+      {
+        "texto": "com",
+        "inicio": 23.684999999999995,
+        "fim": 23.999999999999996
+      },
+      {
+        "texto": "privilégio.",
+        "inicio": 24.029999999999994,
+        "fim": 24.704999999999995
+      },
+      {
+        "texto": "A",
+        "inicio": 25.054999999999993,
+        "fim": 25.279999999999994
+      },
+      {
+        "texto": "sociedade",
+        "inicio": 25.30999999999999,
+        "fim": 25.894999999999992
+      },
+      {
+        "texto": "era",
+        "inicio": 25.92499999999999,
+        "fim": 26.23999999999999
+      },
+      {
+        "texto": "dividida",
+        "inicio": 26.26999999999999,
+        "fim": 26.809999999999988
+      },
+      {
+        "texto": "em",
+        "inicio": 26.83999999999999,
+        "fim": 27.10999999999999
+      },
+      {
+        "texto": "estados.",
+        "inicio": 27.13999999999999,
+        "fim": 27.67999999999999
+      },
+      {
+        "texto": "Clero",
+        "inicio": 28.02999999999999,
+        "fim": 28.43499999999999
+      },
+      {
+        "texto": "e",
+        "inicio": 28.46499999999999,
+        "fim": 28.68999999999999
+      },
+      {
+        "texto": "nobreza",
+        "inicio": 28.719999999999988,
+        "fim": 29.21499999999999
+      },
+      {
+        "texto": "tinham",
+        "inicio": 29.244999999999987,
+        "fim": 29.694999999999986
+      },
+      {
+        "texto": "privilégios",
+        "inicio": 29.724999999999987,
+        "fim": 30.399999999999988
+      },
+      {
+        "texto": "e",
+        "inicio": 30.429999999999986,
+        "fim": 30.654999999999987
+      },
+      {
+        "texto": "quase",
+        "inicio": 30.684999999999985,
+        "fim": 31.089999999999986
+      },
+      {
+        "texto": "não",
+        "inicio": 31.119999999999983,
+        "fim": 31.434999999999985
+      },
+      {
+        "texto": "pagavam",
+        "inicio": 31.464999999999982,
+        "fim": 31.959999999999983
+      },
+      {
+        "texto": "impostos.",
+        "inicio": 31.98999999999998,
+        "fim": 32.57499999999998
+      },
+      {
+        "texto": "O",
+        "inicio": 32.92499999999998,
+        "fim": 33.149999999999984
+      },
+      {
+        "texto": "terceiro",
+        "inicio": 33.179999999999986,
+        "fim": 33.719999999999985
+      },
+      {
+        "texto": "estado,",
+        "inicio": 33.749999999999986,
+        "fim": 34.24499999999998
+      },
+      {
+        "texto": "a",
+        "inicio": 34.39499999999999,
+        "fim": 34.61999999999999
+      },
+      {
+        "texto": "imensa",
+        "inicio": 34.64999999999999,
+        "fim": 35.099999999999994
+      },
+      {
+        "texto": "maioria,",
+        "inicio": 35.12999999999999,
+        "fim": 35.66999999999999
+      },
+      {
+        "texto": "pagava",
+        "inicio": 35.819999999999986,
+        "fim": 36.26999999999999
+      },
+      {
+        "texto": "a",
+        "inicio": 36.29999999999998,
+        "fim": 36.524999999999984
+      },
+      {
+        "texto": "conta.",
+        "inicio": 36.554999999999986,
+        "fim": 37.00499999999999
+      },
+      {
+        "texto": "Então",
+        "inicio": 37.35499999999998,
+        "fim": 37.759999999999984
+      },
+      {
+        "texto": "guarda",
+        "inicio": 37.789999999999985,
+        "fim": 38.23999999999999
+      },
+      {
+        "texto": "isso:",
+        "inicio": 38.26999999999998,
+        "fim": 38.67499999999998
+      },
+      {
+        "texto": "crise",
+        "inicio": 38.82499999999998,
+        "fim": 39.22999999999998
+      },
+      {
+        "texto": "econômica,",
+        "inicio": 39.259999999999984,
+        "fim": 39.889999999999986
+      },
+      {
+        "texto": "mais",
+        "inicio": 40.039999999999985,
+        "fim": 40.399999999999984
+      },
+      {
+        "texto": "desigualdade,",
+        "inicio": 40.429999999999986,
+        "fim": 41.194999999999986
+      },
+      {
+        "texto": "mais",
+        "inicio": 41.344999999999985,
+        "fim": 41.704999999999984
+      },
+      {
+        "texto": "ideias",
+        "inicio": 41.734999999999985,
+        "fim": 42.18499999999999
+      },
+      {
+        "texto": "novas.",
+        "inicio": 42.21499999999998,
+        "fim": 42.664999999999985
+      },
+      {
+        "texto": "Essa",
+        "inicio": 43.01499999999998,
+        "fim": 43.37499999999998
+      },
+      {
+        "texto": "mistura",
+        "inicio": 43.40499999999998,
+        "fim": 43.89999999999998
+      },
+      {
+        "texto": "derrubou",
+        "inicio": 43.92999999999998,
+        "fim": 44.46999999999998
+      },
+      {
+        "texto": "o",
+        "inicio": 44.49999999999998,
+        "fim": 44.72499999999998
+      },
+      {
+        "texto": "Antigo",
+        "inicio": 44.75499999999998,
+        "fim": 45.204999999999984
+      },
+      {
+        "texto": "Regime.",
+        "inicio": 45.23499999999998,
+        "fim": 45.729999999999976
+      }
+    ],
+    "cenas": [
+      {
+        "inicio": 0,
+        "fim": 9.764999999999999
+      },
+      {
+        "inicio": 9.764999999999999,
+        "fim": 25.054999999999996
+      },
+      {
+        "inicio": 25.054999999999996,
+        "fim": 37.35499999999999
+      },
+      {
+        "inicio": 37.35499999999999,
+        "fim": 46.07999999999998
+      }
+    ]
+  },
+  "numero": 1,
+  "total": 3,
+  "marca": "reels-estudo"
+}
