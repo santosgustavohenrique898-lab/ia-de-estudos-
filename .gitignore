@@ -2,3 +2,4 @@ node_modules/
 saida/
 .env
 dist-web/
+dist-previa/

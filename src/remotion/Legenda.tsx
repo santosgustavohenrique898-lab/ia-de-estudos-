@@ -44,8 +44,7 @@ export const Legenda = ({ palavras, t, cor }: { palavras: Palavra[]; t: number; 
               fontWeight: 900,
               color: ativa ? cor : TEXTO,
               transform: `scale(${ativa ? 1.08 : 1})`,
-              textShadow: "0 4px 18px rgba(0,0,0,0.6)",
-              WebkitTextStroke: "2px rgba(0,0,0,0.35)",
+              textShadow: "0 0 24px #FFFFFF, 0 0 8px #FFFFFF, 0 6px 18px rgba(60,50,140,0.25)",
             }}
           >
             {p.texto}

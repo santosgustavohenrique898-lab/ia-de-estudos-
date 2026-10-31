@@ -1,7 +1,7 @@
 import type { CSSProperties, ReactNode } from "react";
 import { spring, useCurrentFrame, useVideoConfig } from "remotion";
 import type { Cena } from "../../schema";
-import { TEXTO, TEXTO_SUAVE } from "../tema";
+import { BORDA, SOBRE_DESTAQUE, SOMBRA, SUPERFICIE, TEXTO, TEXTO_SUAVE } from "../tema";
 
 // Área útil entre o cabeçalho e a legenda.
 const AREA: CSSProperties = {
@@ -21,7 +21,11 @@ const Entra = ({ atraso = 0, children, style }: { atraso?: number; children: Rea
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const p = spring({ frame: frame - atraso, fps, config: { damping: 14, mass: 0.6 } });
-  return <div style={{ opacity: p, transform: `translateY(${(1 - p) * 60}px)`, ...style }}>{children}</div>;
+  return (
+    <div style={{ opacity: p, transform: `perspective(1400px) translateY(${(1 - p) * 70}px) rotateX(${(1 - p) * 28}deg)`, transformOrigin: "50% 100%", ...style }}>
+      {children}
+    </div>
+  );
 };
 
 const Titulo = ({ texto, cor, tamanho = 76 }: { texto: string; cor: string; tamanho?: number }) => (
@@ -83,7 +87,7 @@ export const CenaVisual = ({ cena, cor }: { cena: Cena; cor: string }) => {
                 display: "inline-block",
                 fontSize: 40,
                 fontWeight: 800,
-                color: "#0B1020",
+                color: SOBRE_DESTAQUE,
                 background: cor,
                 borderRadius: 999,
                 padding: "12px 32px",
@@ -99,8 +103,9 @@ export const CenaVisual = ({ cena, cor }: { cena: Cena; cor: string }) => {
                 fontSize: 58,
                 fontWeight: 700,
                 lineHeight: 1.3,
-                background: "rgba(255,255,255,0.06)",
-                border: "3px solid rgba(255,255,255,0.15)",
+                background: SUPERFICIE,
+                border: `2px solid ${BORDA}`,
+                boxShadow: SOMBRA,
                 borderRadius: 36,
                 padding: "52px 48px",
               }}
@@ -124,7 +129,7 @@ export const CenaVisual = ({ cena, cor }: { cena: Cena; cor: string }) => {
                     height: 76,
                     borderRadius: 22,
                     background: cor,
-                    color: "#0B1020",
+                    color: SOBRE_DESTAQUE,
                     fontSize: 42,
                     fontWeight: 900,
                     display: "flex",
@@ -150,11 +155,12 @@ export const CenaVisual = ({ cena, cor }: { cena: Cena; cor: string }) => {
               <Entra key={i} atraso={12 + i * 16} style={{ flex: 1 }}>
                 <div
                   style={{
-                    border: `4px solid ${i === 0 ? cor : "rgba(255,255,255,0.35)"}`,
+                    border: `4px solid ${i === 0 ? cor : BORDA}`,
                     borderRadius: 32,
                     padding: "36px 32px",
                     minHeight: 560,
-                    background: i === 0 ? `${cor}1F` : "rgba(255,255,255,0.05)",
+                    background: i === 0 ? `linear-gradient(160deg, #FFFFFF, ${cor}1A)` : SUPERFICIE,
+                    boxShadow: SOMBRA,
                   }}
                 >
                   <div style={{ fontSize: 48, fontWeight: 900, marginBottom: 28, color: i === 0 ? cor : TEXTO }}>{lado.nome}</div>
@@ -175,7 +181,7 @@ export const CenaVisual = ({ cena, cor }: { cena: Cena; cor: string }) => {
         <div style={AREA}>
           <Titulo texto={cena.titulo} cor={cor} tamanho={68} />
           <div style={{ position: "relative", paddingLeft: 70 }}>
-            <div style={{ position: "absolute", left: 22, top: 20, bottom: 20, width: 6, borderRadius: 3, background: "rgba(255,255,255,0.25)" }} />
+            <div style={{ position: "absolute", left: 22, top: 20, bottom: 20, width: 6, borderRadius: 3, background: BORDA }} />
             {cena.eventos.map((e, i) => (
               <Entra key={i} atraso={12 + i * 14}>
                 <div style={{ position: "relative", marginBottom: 48 }}>

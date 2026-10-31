@@ -3,6 +3,7 @@ import { Player } from "@remotion/player";
 import { CenaVisual } from "../src/remotion/templates/CenaVisual";
 import type { Cena } from "../src/schema";
 import { statusServidor } from "./api";
+import { Fundo3D, useParallax } from "./Efeitos3D";
 
 export type Objetivo = "ENEM" | "Vestibular" | "Concurso" | "Faculdade";
 export type Pedido = {
@@ -33,6 +34,7 @@ export const Inicio = ({ aoGerar }: { aoGerar: (p: Pedido) => void }) => {
   const [reels, setReels] = useState(3);
   const seletor = useRef<HTMLInputElement>(null);
   const [semIA, setSemIA] = useState(false);
+  useParallax();
 
   useEffect(() => {
     statusServidor().then((s) => setSemIA(s === null || !s.ia));
@@ -45,14 +47,19 @@ export const Inicio = ({ aoGerar }: { aoGerar: (p: Pedido) => void }) => {
 
   return (
     <div className="inicio">
+      <Fundo3D />
       <header className="topo">
         <div className="logo">
           <span className="logo-icone">▶</span> IA de Estudos
         </div>
+        <nav className="topo-links">
+          <a href="#como-funciona">Como funciona</a>
+        </nav>
       </header>
 
       <main className="hero">
         <section className="hero-texto">
+          <div className="etiqueta-hero">✦ Feito para ENEM, vestibular e concurso</div>
           <h1>
             Chega de videoaula de 2 horas.
             <br />
@@ -67,7 +74,7 @@ export const Inicio = ({ aoGerar }: { aoGerar: (p: Pedido) => void }) => {
             <div className="abas" role="tablist">
               {(
                 [
-                  ["tema", "Digitar um tema"],
+                  ["tema", "Digitar tema"],
                   ["texto", "Colar texto"],
                   ["pdf", "Enviar PDF"],
                 ] as const
@@ -161,28 +168,37 @@ export const Inicio = ({ aoGerar }: { aoGerar: (p: Pedido) => void }) => {
         </section>
 
         <aside className="vitrine" aria-hidden>
-          <div className="celular">
-            <Player
-              component={CenaVisual}
-              inputProps={{ cena: CENA_VITRINE, cor: "#8B6CFF" }}
-              durationInFrames={150}
-              fps={30}
-              compositionWidth={1080}
-              compositionHeight={1920}
-              style={{ width: "100%", height: "100%" }}
-              autoPlay
-              loop
-              controls={false}
-              acknowledgeRemotionLicense
-            />
-            <div className="legenda-falsa">
-              e no fim, <span>uma pergunta</span>
+          <div className="palco3d">
+            <div className="celular">
+              <div className="celular-tela">
+                <Player
+                  component={CenaVisual}
+                  inputProps={{ cena: CENA_VITRINE, cor: "#6C4CF5" }}
+                  durationInFrames={150}
+                  fps={30}
+                  compositionWidth={1080}
+                  compositionHeight={1920}
+                  style={{ width: "100%", height: "100%" }}
+                  autoPlay
+                  loop
+                  controls={false}
+                  acknowledgeRemotionLicense
+                />
+                <div className="legenda-falsa">
+                  e no fim, <span>uma pergunta</span>
+                </div>
+              </div>
             </div>
+            <div className="chip3d chip-xp">⚡ +15 XP</div>
+            <div className="chip3d chip-certo">✓ Mandou bem!</div>
+            <div className="chip3d chip-fogo">🔥 3 seguidas</div>
+            <div className="chip3d chip-voz">🎙️ Voz humana</div>
+            <div className="sombra-chao" />
           </div>
         </aside>
       </main>
 
-      <section className="passos">
+      <section className="passos" id="como-funciona">
         {[
           ["1", "Você coloca a matéria", "Um tema, um resumo ou a apostila em PDF."],
           ["2", "A IA monta a aula", "Separa os conceitos e confere tudo com o seu material."],

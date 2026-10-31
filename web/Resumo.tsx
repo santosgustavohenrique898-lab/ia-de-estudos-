@@ -1,4 +1,5 @@
 import type { Construcao, Desempenho } from "./main";
+import { Fundo3D } from "./Efeitos3D";
 
 export const Resumo = ({ construcao, desempenho, aoNovaAula }: { construcao: Construcao; desempenho: Desempenho; aoNovaAula: () => void }) => {
   const total = Math.max(desempenho.respondidas, 1);
@@ -7,6 +8,7 @@ export const Resumo = ({ construcao, desempenho, aoNovaAula }: { construcao: Con
 
   return (
     <div className="resumo">
+      <Fundo3D />
       <div className="resumo-cartao">
         <div className="anel" style={{ ["--pct" as string]: `${pct}%` }}>
           <div>

@@ -4,6 +4,7 @@ import type { Construcao, Desempenho } from "./main";
 import type { ReelPronto } from "./api";
 import { ReelAoVivo } from "./ReelAoVivo";
 import { QuizAoVivo } from "./QuizAoVivo";
+import { Fundo3D } from "./Efeitos3D";
 
 type Item =
   | { tipo: "reel"; i: number; pronto: ReelPronto }
@@ -99,6 +100,7 @@ export const Feed = ({
 
   return (
     <div className="feed-pagina">
+      <Fundo3D denso={false} />
       <div className="feed-moldura">
         <div className="hud">
           <button className="hud-botao" onClick={aoSair} aria-label="Sair da aula">
@@ -150,8 +152,10 @@ export const Feed = ({
               )}
               {item.tipo === "carregando" && (
                 <div className="carregando-card">
-                  <div className="orbita">
-                    <div className="orbita-centro">▶</div>
+                  <div className="nucleo3d pequeno">
+                    <div className="orbita-anel a1" />
+                    <div className="orbita-anel a2" />
+                    <div className="nucleo-orbe" />
                   </div>
                   <h2>Preparando o próximo reel</h2>
                   <p>Já já ele aparece aqui. Enquanto isso, você pode voltar e rever os anteriores.</p>

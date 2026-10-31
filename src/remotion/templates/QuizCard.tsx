@@ -1,6 +1,6 @@
 import { spring, useCurrentFrame, useVideoConfig } from "remotion";
 import type { Reel } from "../../schema";
-import { CERTO, TEXTO, TEXTO_SUAVE } from "../tema";
+import { BORDA, CERTO, SOMBRA, SUPERFICIE, TEXTO, TEXTO_SUAVE } from "../tema";
 
 const LETRAS = ["A", "B", "C", "D"];
 
@@ -39,8 +39,9 @@ export const QuizCard = ({ quiz, cor }: { quiz: Reel["quiz"]; cor: string }) => 
               padding: "26px 30px",
               marginBottom: 22,
               borderRadius: 26,
-              border: `4px solid ${certa ? CERTO : "rgba(255,255,255,0.25)"}`,
-              background: certa ? `${CERTO}26` : "rgba(255,255,255,0.05)",
+              border: `4px solid ${certa ? CERTO : BORDA}`,
+              background: certa ? `${CERTO}1A` : SUPERFICIE,
+              boxShadow: SOMBRA,
               opacity: apagada ? 0.4 : 1,
             }}
           >

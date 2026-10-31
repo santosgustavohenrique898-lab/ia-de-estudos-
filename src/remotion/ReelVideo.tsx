@@ -70,7 +70,7 @@ const Fundo = ({ cor }: { cor: string }) => {
   return (
     <AbsoluteFill
       style={{
-        background: `radial-gradient(circle at ${x}% ${y}%, ${cor}55 0%, transparent 55%), radial-gradient(circle at ${100 - x}% 90%, ${cor}22 0%, transparent 50%)`,
+        background: `radial-gradient(circle at ${x}% ${y}%, ${cor}33 0%, transparent 55%), radial-gradient(circle at ${100 - x}% 90%, ${cor}1A 0%, transparent 50%)`,
       }}
     />
   );
@@ -81,7 +81,7 @@ const Cabecalho = ({ numero, total, conceito, cor }: { numero: number; total: nu
     <div
       style={{
         background: cor,
-        color: "#0B1020",
+        color: "#FFFFFF",
         fontWeight: 800,
         fontSize: 30,
         borderRadius: 999,
@@ -101,7 +101,7 @@ const Progresso = ({ cenas, duracao, t, cor }: { cenas: Narracao["cenas"]; durac
     {cenas.map((c, i) => {
       const p = interpolate(t, [c.inicio, c.fim], [0, 100], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
       return (
-        <div key={i} style={{ flex: (c.fim - c.inicio) / duracao, height: 8, borderRadius: 4, background: "rgba(255,255,255,0.18)" }}>
+        <div key={i} style={{ flex: (c.fim - c.inicio) / duracao, height: 8, borderRadius: 4, background: "rgba(15,18,34,0.10)" }}>
           <div style={{ width: `${p}%`, height: "100%", borderRadius: 4, background: cor }} />
         </div>
       );
