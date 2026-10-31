@@ -8,17 +8,21 @@
     "studio": "remotion studio src/remotion/index.ts",
     "typecheck": "tsc",
     "site": "vite",
-    "site:build": "vite build"
+    "site:build": "vite build",
+    "servidor": "tsx servidor/index.ts",
+    "start": "vite build && tsx servidor/index.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@anthropic-ai/sdk": "^1.3.0",
+    "@hono/node-server": "^2.1.5",
     "@remotion/bundler": "^4.0.539",
     "@remotion/cli": "^4.0.539",
     "@remotion/player": "^4.0.539",
     "@remotion/renderer": "^4.0.539",
+    "hono": "^4.13.14",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "remotion": "^4.0.539",

@@ -1,8 +1,7 @@
-import type { Aula } from "../src/schema";
-import type { Desempenho } from "./main";
+import type { Construcao, Desempenho } from "./main";
 
-export const Resumo = ({ aula, desempenho, aoNovaAula }: { aula: Aula; desempenho: Desempenho; aoNovaAula: () => void }) => {
-  const total = aula.reels.length;
+export const Resumo = ({ construcao, desempenho, aoNovaAula }: { construcao: Construcao; desempenho: Desempenho; aoNovaAula: () => void }) => {
+  const total = Math.max(desempenho.respondidas, 1);
   const pct = desempenho.respondidas ? Math.round((desempenho.acertos / total) * 100) : 0;
   const mensagem = pct === 100 ? "Gabaritou! 🏆" : pct >= 60 ? "Muito bom! 💪" : "Bora revisar e tentar de novo 📚";
 
@@ -16,7 +15,7 @@ export const Resumo = ({ aula, desempenho, aoNovaAula }: { aula: Aula; desempenh
           </div>
         </div>
         <h2>{mensagem}</h2>
-        <p className="sub">{aula.titulo}</p>
+        <p className="sub">{construcao.titulo}</p>
 
         <div className="numeros">
           <div>

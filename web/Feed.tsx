@@ -1,37 +1,57 @@
 import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
-import type { Aula } from "../src/schema";
 import { destaque } from "../src/remotion/tema";
-import type { Desempenho } from "./main";
-import type { Pedido } from "./Inicio";
+import type { Construcao, Desempenho } from "./main";
+import type { ReelPronto } from "./api";
 import { ReelAoVivo } from "./ReelAoVivo";
 import { QuizAoVivo } from "./QuizAoVivo";
 
-type Item = { tipo: "reel"; i: number } | { tipo: "quiz"; i: number } | { tipo: "fim" };
+type Item =
+  | { tipo: "reel"; i: number; pronto: ReelPronto }
+  | { tipo: "quiz"; i: number; pronto: ReelPronto }
+  | { tipo: "carregando" }
+  | { tipo: "fim" };
+
+// Os reels entram no feed na ordem da aula; o feed para no primeiro que ainda está sendo produzido.
+function montarItens(c: Construcao): Item[] {
+  const itens: Item[] = [];
+  let n = 0;
+  for (const r of c.reels) {
+    if (r === "descartado") continue;
+    if (r === null) {
+      itens.push({ tipo: "carregando" });
+      return itens;
+    }
+    itens.push({ tipo: "reel", i: n, pronto: r }, { tipo: "quiz", i: n, pronto: r });
+    n++;
+  }
+  if (c.terminou) itens.push({ tipo: "fim" });
+  else itens.push({ tipo: "carregando" });
+  return itens;
+}
 
 const VELOCIDADES = [1, 1.25, 1.5];
 
 export const Feed = ({
-  aula,
-  pedido,
+  construcao,
   desempenho,
   setDesempenho,
   aoSair,
   aoTerminar,
 }: {
-  aula: Aula;
-  pedido: Pedido;
+  construcao: Construcao;
   desempenho: Desempenho;
   setDesempenho: Dispatch<SetStateAction<Desempenho>>;
   aoSair: () => void;
   aoTerminar: () => void;
 }) => {
-  const itens: Item[] = [...aula.reels.flatMap((_, i): Item[] => [{ tipo: "reel", i }, { tipo: "quiz", i }]), { tipo: "fim" }];
+  const itens = montarItens(construcao);
+  const prontos = itens.filter((x): x is Extract<Item, { tipo: "reel" }> => x.tipo === "reel").map((x) => x.pronto);
+  const total = construcao.reels.filter((r) => r !== "descartado").length;
   const [ativo, setAtivo] = useState(0);
   const [mudo, setMudo] = useState(false);
   const [velocidade, setVelocidade] = useState(1);
   const [curtidos, setCurtidos] = useState<Set<number>>(new Set());
   const [salvos, setSalvos] = useState<Set<number>>(new Set());
-  const [avisoDemo, setAvisoDemo] = useState(!/revolu/i.test(pedido.conteudo));
   const [xpVoando, setXpVoando] = useState<number | null>(null);
   const lista = useRef<HTMLDivElement>(null);
 
@@ -47,7 +67,7 @@ export const Feed = ({
     );
     raiz.querySelectorAll("[data-indice]").forEach((el) => obs.observe(el));
     return () => obs.disconnect();
-  }, []);
+  }, [itens.length]);
 
   const irPara = (indice: number) => {
     lista.current?.querySelector(`[data-indice="${indice}"]`)?.scrollIntoView({ behavior: "smooth" });
@@ -71,7 +91,7 @@ export const Feed = ({
         respondidas: d.respondidas + 1,
         sequencia,
         melhorSequencia: Math.max(d.melhorSequencia, sequencia),
-        revisar: acertou ? d.revisar : [...d.revisar, aula.reels[i].conceito],
+        revisar: acertou ? d.revisar : [...d.revisar, prontos[i].reel.conceito],
       };
     });
     setTimeout(() => setXpVoando(null), 1400);
@@ -93,20 +113,15 @@ export const Feed = ({
           </div>
         </div>
 
-        {avisoDemo && (
-          <div className="aviso-demo" onClick={() => setAvisoDemo(false)}>
-            Versão de demonstração: por enquanto toda aula usa o conteúdo de exemplo sobre Revolução Francesa. Toque para fechar.
-          </div>
-        )}
-
         <div className="feed" ref={lista}>
           {itens.map((item, k) => (
             <section key={k} className="card" data-indice={k}>
               {item.tipo === "reel" && (
                 <ReelAoVivo
-                  reel={aula.reels[item.i]}
+                  reel={item.pronto.reel}
+                  narracao={item.pronto.narracao}
                   numero={item.i + 1}
-                  total={aula.reels.length}
+                  total={total}
                   cor={destaque(item.i + 1)}
                   ativo={ativo === k}
                   mudo={mudo}
@@ -122,8 +137,9 @@ export const Feed = ({
               )}
               {item.tipo === "quiz" && (
                 <QuizAoVivo
-                  quiz={aula.reels[item.i].quiz}
-                  conceito={aula.reels[item.i].conceito}
+                  quiz={item.pronto.reel.quiz}
+                  conceito={item.pronto.reel.conceito}
+                  falarEmVoz={!item.pronto.narracao.audio}
                   cor={destaque(item.i + 1)}
                   ativo={ativo === k}
                   mudo={mudo}
@@ -132,12 +148,21 @@ export const Feed = ({
                   aoContinuar={() => irPara(k + 1)}
                 />
               )}
+              {item.tipo === "carregando" && (
+                <div className="carregando-card">
+                  <div className="orbita">
+                    <div className="orbita-centro">▶</div>
+                  </div>
+                  <h2>Preparando o próximo reel</h2>
+                  <p>Já já ele aparece aqui. Enquanto isso, você pode voltar e rever os anteriores.</p>
+                </div>
+              )}
               {item.tipo === "fim" && (
                 <div className="fim-card">
                   <div className="fim-emoji">🎉</div>
                   <h2>Aula concluída!</h2>
                   <p>
-                    Você acertou {desempenho.acertos} de {aula.reels.length} perguntas.
+                    Você acertou {desempenho.acertos} de {prontos.length} perguntas.
                   </p>
                   <button className="botao-principal" onClick={aoTerminar}>
                     Ver meu resultado

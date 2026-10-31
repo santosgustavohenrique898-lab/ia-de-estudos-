@@ -1,12 +1,15 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Player } from "@remotion/player";
 import { CenaVisual } from "../src/remotion/templates/CenaVisual";
 import type { Cena } from "../src/schema";
+import { statusServidor } from "./api";
 
 export type Objetivo = "ENEM" | "Vestibular" | "Concurso" | "Faculdade";
 export type Pedido = {
   tipo: "tema" | "texto" | "pdf";
+  // Tema ou texto digitado; para PDF, o nome do arquivo.
   conteudo: string;
+  arquivo?: File;
   objetivo: Objetivo;
   reels: number;
 };
@@ -29,9 +32,16 @@ export const Inicio = ({ aoGerar }: { aoGerar: (p: Pedido) => void }) => {
   const [objetivo, setObjetivo] = useState<Objetivo>("ENEM");
   const [reels, setReels] = useState(3);
   const seletor = useRef<HTMLInputElement>(null);
+  const [semIA, setSemIA] = useState(false);
+
+  useEffect(() => {
+    statusServidor().then((s) => setSemIA(s === null || !s.ia));
+  }, []);
 
   const conteudo = tipo === "tema" ? tema.trim() : tipo === "texto" ? texto.trim() : arquivo?.name ?? "";
-  const pronto = tipo === "texto" ? conteudo.length >= 200 : conteudo.length > 0;
+  const pdfGrande = tipo === "pdf" && (arquivo?.size ?? 0) > 15 * 1024 * 1024;
+  const pronto = tipo === "texto" ? conteudo.length >= 200 : conteudo.length > 0 && !pdfGrande;
+  const gerar = () => pronto && aoGerar({ tipo, conteudo, arquivo: tipo === "pdf" ? arquivo ?? undefined : undefined, objetivo, reels });
 
   return (
     <div className="inicio">
@@ -39,7 +49,6 @@ export const Inicio = ({ aoGerar }: { aoGerar: (p: Pedido) => void }) => {
         <div className="logo">
           <span className="logo-icone">▶</span> IA de Estudos
         </div>
-        <span className="selo">versão de demonstração</span>
       </header>
 
       <main className="hero">
@@ -76,7 +85,7 @@ export const Inicio = ({ aoGerar }: { aoGerar: (p: Pedido) => void }) => {
                   placeholder="O que você quer aprender hoje?"
                   value={tema}
                   onChange={(e) => setTema(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && pronto && aoGerar({ tipo, conteudo, objetivo, reels })}
+                  onKeyDown={(e) => e.key === "Enter" && gerar()}
                   autoFocus
                 />
                 <div className="sugestoes">
@@ -118,6 +127,8 @@ export const Inicio = ({ aoGerar }: { aoGerar: (p: Pedido) => void }) => {
               </button>
             )}
 
+            {pdfGrande && <div className="erro-linha">O PDF passa de 15 MB. Envie só o capítulo que você quer estudar.</div>}
+
             <div className="linha-opcoes">
               <div>
                 <div className="rotulo">Estou estudando para</div>
@@ -142,9 +153,10 @@ export const Inicio = ({ aoGerar }: { aoGerar: (p: Pedido) => void }) => {
               </div>
             </div>
 
-            <button className="botao-principal" disabled={!pronto} onClick={() => aoGerar({ tipo, conteudo, objetivo, reels })}>
+            <button className="botao-principal" disabled={!pronto} onClick={gerar}>
               Gerar minha aula em reels
             </button>
+            {semIA && <div className="erro-linha">O servidor ainda não está ligado à IA. Veja o guia de configuração no README.</div>}
           </div>
         </section>
 

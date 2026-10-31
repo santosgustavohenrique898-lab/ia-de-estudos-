@@ -40,8 +40,24 @@ export const CenaFixacao = z.object({
   frase: z.string().describe("A frase que o aluno deve levar para a prova, no máximo 14 palavras."),
 });
 
+export const CenaDefinicao = z.object({
+  template: z.literal("definicao"),
+  fala: z.string(),
+  termo: z.string().describe("O termo ou conceito, no máximo 4 palavras."),
+  definicao: z.string().describe("Definição simples, no máximo 18 palavras."),
+});
+
+export const CenaExemplo = z.object({
+  template: z.literal("exemplo"),
+  fala: z.string(),
+  titulo: z.string().describe("Ex.: 'Na prática', 'Imagina assim'. No máximo 5 palavras."),
+  situacao: z.string().describe("Cena do dia a dia que ilustra o conceito, no máximo 25 palavras."),
+});
+
 export const Cena = z.discriminatedUnion("template", [
   CenaGancho,
+  CenaDefinicao,
+  CenaExemplo,
   CenaLista,
   CenaComparacao,
   CenaLinhaDoTempo,
@@ -57,7 +73,7 @@ export const Quiz = z.object({
 
 export const Reel = z.object({
   conceito: z.string(),
-  cenas: z.array(Cena).describe("3 a 5 cenas. A primeira é sempre gancho e a última sempre fixacao."),
+  cenas: z.array(Cena).describe("4 a 6 cenas. A primeira é sempre gancho e a última sempre fixacao."),
   quiz: Quiz,
 });
 

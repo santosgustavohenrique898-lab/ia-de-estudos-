@@ -11,12 +11,14 @@ type Props = {
   cor: string;
   ativo: boolean;
   mudo: boolean;
+  // Sem voz humana gravada para o reel, a pergunta é lida pela voz do navegador.
+  falarEmVoz: boolean;
   sequencia: number;
   aoResponder: (acertou: boolean) => void;
   aoContinuar: () => void;
 };
 
-export const QuizAoVivo = ({ quiz, conceito, cor, ativo, mudo, sequencia, aoResponder, aoContinuar }: Props) => {
+export const QuizAoVivo = ({ quiz, conceito, cor, ativo, mudo, falarEmVoz, sequencia, aoResponder, aoContinuar }: Props) => {
   const [escolha, setEscolha] = useState<number | null>(null);
   const [lida, setLida] = useState(false);
   const respondeu = escolha !== null;
@@ -24,7 +26,7 @@ export const QuizAoVivo = ({ quiz, conceito, cor, ativo, mudo, sequencia, aoResp
 
   // Lê a pergunta em voz alta na primeira vez que o card aparece.
   useEffect(() => {
-    if (!ativo || lida || respondeu) return;
+    if (!ativo || lida || respondeu || !falarEmVoz) return;
     setLida(true);
     return falar(quiz.pergunta, { velocidade: 1, mudo, aoPalavra: () => {}, aoFim: () => {} });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -35,7 +37,7 @@ export const QuizAoVivo = ({ quiz, conceito, cor, ativo, mudo, sequencia, aoResp
     setEscolha(i);
     const certo = i === quiz.correta;
     aoResponder(certo);
-    falar(`${certo ? "Mandou bem!" : "Quase!"} ${quiz.explicacao}`, { velocidade: 1.05, mudo, aoPalavra: () => {}, aoFim: () => {} });
+    if (falarEmVoz) falar(`${certo ? "Mandou bem!" : "Quase!"} ${quiz.explicacao}`, { velocidade: 1.05, mudo, aoPalavra: () => {}, aoFim: () => {} });
   };
 
   return (

@@ -1,13 +1,16 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Player, type PlayerRef } from "@remotion/player";
 import { CenaVisual } from "../src/remotion/templates/CenaVisual";
 import type { Reel } from "../src/schema";
+import type { Narracao } from "../src/pipeline/voz";
 import { falar } from "./voz";
+import { urlAudio } from "./api";
 
 const MAX_POR_BLOCO = 4;
 
 type Props = {
   reel: Reel;
+  narracao: Narracao;
   numero: number;
   total: number;
   cor: string;
@@ -23,10 +26,21 @@ type Props = {
   aoTerminar: () => void;
 };
 
-// Reel tocado ao vivo no navegador: a animação vem dos mesmos templates do vídeo exportado,
-// a voz é falada cena a cena e a legenda acompanha a palavra dita.
+// Reel tocado ao vivo no navegador: a animação vem dos mesmos templates do vídeo exportado
+// e a legenda acompanha a palavra dita. A voz é a gravação humana feita no servidor (ElevenLabs);
+// se o servidor não tiver voz configurada, o navegador fala cena a cena.
 export const ReelAoVivo = (p: Props) => {
-  const { reel, cor, ativo } = p;
+  const { reel, narracao, cor, ativo } = p;
+  const audio = useMemo(() => (narracao.audio ? new Audio(urlAudio(narracao.audio)) : null), [narracao.audio]);
+  // Em que palavra da fala completa começa cada cena (a gravação é uma só para o reel inteiro).
+  const inicioPalavras = useMemo(() => {
+    let n = 0;
+    return reel.cenas.map((c) => {
+      const inicio = n;
+      n += c.fala.split(/\s+/).filter(Boolean).length;
+      return inicio;
+    });
+  }, [reel]);
   const [cena, setCena] = useState(0);
   const [palavra, setPalavra] = useState(0);
   const [pausado, setPausado] = useState(false);
@@ -42,6 +56,7 @@ export const ReelAoVivo = (p: Props) => {
   // Sempre que o reel volta para a tela, começa do início.
   useEffect(() => {
     if (ativo) {
+      if (audio) audio.currentTime = 0;
       setCena(0);
       setPalavra(0);
       setTerminou(false);
@@ -50,8 +65,45 @@ export const ReelAoVivo = (p: Props) => {
     }
   }, [ativo]);
 
+  // Modo voz humana: o áudio manda, e cena e palavra são lidas do tempo atual da gravação.
   useEffect(() => {
-    if (!ativo || pausado || terminou) return;
+    if (!audio) return;
+    audio.muted = p.mudo;
+    audio.playbackRate = p.velocidade * (devagar ? 0.85 : 1);
+    if (!ativo || pausado || terminou) {
+      audio.pause();
+      return;
+    }
+    // Navegador bloqueou o som sem toque: mostra o botão de play. Interrupções por pause() são normais.
+    audio.play().catch((e: DOMException) => e.name === "NotAllowedError" && setPausado(true));
+    let quadro = 0;
+    const acompanhar = () => {
+      const t = audio.currentTime;
+      let c = 0;
+      while (c + 1 < narracao.cenas.length && narracao.cenas[c + 1].inicio <= t) c++;
+      let w = 0;
+      while (w + 1 < narracao.palavras.length && narracao.palavras[w + 1].inicio <= t) w++;
+      setCena(c);
+      setPalavra(Math.max(0, w - inicioPalavras[c]));
+      quadro = requestAnimationFrame(acompanhar);
+    };
+    quadro = requestAnimationFrame(acompanhar);
+    const fim = () => {
+      setTerminou(true);
+      p.aoTerminar();
+    };
+    audio.addEventListener("ended", fim);
+    return () => {
+      cancelAnimationFrame(quadro);
+      audio.removeEventListener("ended", fim);
+      audio.pause();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [audio, ativo, pausado, terminou, p.mudo, p.velocidade, devagar, rodada]);
+
+  // Modo voz do navegador: fala cena por cena.
+  useEffect(() => {
+    if (audio || !ativo || pausado || terminou) return;
     setPalavra(0);
     return falar(reel.cenas[cena].fala, {
       velocidade: p.velocidade * (devagar ? 0.85 : 1),
@@ -88,6 +140,7 @@ export const ReelAoVivo = (p: Props) => {
     } else {
       toqueSimples.current = window.setTimeout(() => {
         if (terminou) {
+          if (audio) audio.currentTime = 0;
           setTerminou(false);
           setCena(0);
           setRodada((r) => r + 1);
@@ -98,11 +151,12 @@ export const ReelAoVivo = (p: Props) => {
   };
 
   const naoEntendi = () => {
+    if (audio) audio.currentTime = narracao.cenas[cena].inicio;
     setDevagar(true);
     setTerminou(false);
     setPausado(false);
     setRodada((r) => r + 1);
-    mostrarAviso("Beleza, vou repetir mais devagar. Na versão completa a IA reexplica com outro exemplo.");
+    mostrarAviso("Beleza, vou repetir essa parte mais devagar.");
   };
 
   const fala = reel.cenas[cena].fala.split(/\s+/).filter(Boolean);

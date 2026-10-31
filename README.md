@@ -1,20 +1,49 @@
 # ia-de-estudos
 
-## O site (`web/`)
+## Como o produto funciona
 
-Página inicial onde o aluno digita um tema, cola um texto ou envia um PDF, escolhe o objetivo (ENEM, vestibular, concurso, faculdade) e o tamanho da aula. Depois vem um feed vertical, como nos apps de vídeo:
+1. O aluno abre o site, digita um tema, cola um texto ou envia um PDF, escolhe o objetivo (ENEM, vestibular, concurso, faculdade) e o tamanho da aula.
+2. O servidor (`servidor/`) monta a aula:
+   - **tema**: a IA (Claude) pesquisa o assunto na internet e escreve um dossiê com fontes;
+   - **texto ou PDF**: usa o material do aluno;
+   - planeja os conceitos, escreve cada reel, confere cada frase contra o material (reel reprovado é reescrito ou descartado) e grava a voz humana (ElevenLabs).
+3. Cada reel aparece no feed assim que fica pronto: animação, voz, legenda palavra por palavra, toque para pausar, dois toques para curtir, "não entendi", salvar e velocidade.
+4. Depois de cada reel vem uma pergunta valendo XP. No final, o resumo com acertos e o que revisar.
 
-- reels animados tocando ao vivo, com voz do navegador e legenda que acompanha a palavra falada;
-- toque para pausar, dois toques para curtir, botões de "não entendi", salvar para revisar, som e velocidade;
-- depois de cada reel, uma pergunta que se responde com um toque, com XP, sequência de acertos e confete;
-- tela final com porcentagem de acerto e os conceitos para revisar.
+Sem chave da ElevenLabs, a voz é a do navegador (robótica). Sem chave do Claude, o site não gera aulas.
+
+## Rodar no seu computador
+
+Precisa de Node 20 ou mais novo.
 
 ```bash
-npm run site         # abre em http://localhost:5173
-npm run site:build   # gera a versão estática em dist-web/
+npm install
+cp .env.example .env    # preencha as chaves (veja abaixo)
+npm start               # compila o site e abre em http://localhost:8787
 ```
 
-Por enquanto o site é uma demonstração: toda aula usa o conteúdo de exemplo (Revolução Francesa). O próximo passo é ligar o site ao gerador abaixo por meio de um servidor.
+Para mexer no visual com recarga automática, rode `npm run servidor` num terminal e `npm run site` em outro (abre em http://localhost:5173).
+
+## Colocar no ar: o que você precisa fazer
+
+1. **Chave do Claude (a IA)**: crie uma conta em https://console.anthropic.com, coloque créditos em *Billing* e gere uma chave em *API Keys*. Ela vai na variável `ANTHROPIC_API_KEY`.
+2. **Voz humana (ElevenLabs)**: crie uma conta em https://elevenlabs.io. Em *Voice Library*, filtre por português do Brasil, escolha uma voz e adicione às suas vozes; copie o *Voice ID* para `ELEVENLABS_VOICE_ID`. Gere a chave de API para `ELEVENLABS_API_KEY`. Para vender o produto, use um plano pago, que libera uso comercial.
+3. **Hospedagem**: qualquer serviço que rode Node continuamente serve. Exemplo no Render (https://render.com):
+   - *New > Web Service*, conecte este repositório do GitHub;
+   - Build command: `npm install && npx vite build`;
+   - Start command: `npx tsx servidor/index.ts`;
+   - em *Environment*, adicione `ANTHROPIC_API_KEY`, `ELEVENLABS_API_KEY` e `ELEVENLABS_VOICE_ID`;
+   - o Render dá um endereço `https://...onrender.com`; depois dá para ligar um domínio seu.
+4. Opcional: `AULAS_POR_HORA` limita quantas aulas cada pessoa gera por hora (padrão 10), para proteger seus créditos.
+
+**Custo estimado por aula de 3 reels** (estimativa; confira no painel depois das primeiras aulas): IA com o modelo padrão (`claude-opus-5-5`) entre US$ 0,50 e US$ 1,00, contando pesquisa e checagem; voz de cerca de 3 mil caracteres na ElevenLabs. Dá para trocar o modelo em `CLAUDE_MODEL`.
+
+## O que ainda falta para virar produto
+
+- Login, planos e pagamento.
+- Guardar as aulas (hoje ficam na memória do servidor por 1 hora) e a revisão espaçada dos conceitos errados.
+- "Não entendi" que pede à IA uma nova explicação (hoje repete a parte mais devagar).
+- Ler PDF escaneado (foto).
 
 ## O gerador de vídeos (`src/`)
 

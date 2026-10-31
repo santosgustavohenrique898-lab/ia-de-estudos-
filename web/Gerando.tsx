@@ -1,47 +1,78 @@
-import { useEffect, useState } from "react";
 import type { Pedido } from "./Inicio";
+import type { Construcao } from "./main";
 
-const ETAPAS = [
-  "Lendo seu material",
-  "Separando os conceitos principais",
-  "Escrevendo os roteiros",
-  "Conferindo cada frase com a fonte",
-  "Animando os reels e gravando a voz",
-];
-
-const MS_POR_ETAPA = 850;
-
-export const Gerando = ({ pedido, aoTerminar }: { pedido: Pedido; aoTerminar: () => void }) => {
-  const [etapa, setEtapa] = useState(0);
-
-  useEffect(() => {
-    if (etapa >= ETAPAS.length) {
-      const t = setTimeout(aoTerminar, 300);
-      return () => clearTimeout(t);
-    }
-    const t = setTimeout(() => setEtapa((e) => e + 1), MS_POR_ETAPA);
-    return () => clearTimeout(t);
-  }, [etapa, aoTerminar]);
-
+export const Gerando = ({
+  pedido,
+  construcao,
+  aoTentarDeNovo,
+  aoVoltar,
+}: {
+  pedido: Pedido;
+  construcao: Construcao;
+  aoTentarDeNovo: () => void;
+  aoVoltar: () => void;
+}) => {
+  const etapas =
+    pedido.tipo === "tema"
+      ? [
+          ["pesquisando", "Pesquisando o assunto na internet"],
+          ["planejando", "Separando os conceitos principais"],
+          ["escrevendo", "Escrevendo, conferindo e gravando a voz dos reels"],
+        ]
+      : [
+          ["lendo", pedido.tipo === "pdf" ? "Lendo o seu PDF" : "Lendo o seu texto"],
+          ["planejando", "Separando os conceitos principais"],
+          ["escrevendo", "Escrevendo, conferindo e gravando a voz dos reels"],
+        ];
+  const atual = etapas.findIndex(([id]) => id === construcao.etapa);
   const origem = pedido.tipo === "pdf" ? `o PDF ${pedido.conteudo}` : pedido.tipo === "texto" ? "o seu texto" : `"${pedido.conteudo}"`;
+
+  if (construcao.erro) {
+    return (
+      <div className="gerando">
+        <div className="erro-icone">!</div>
+        <h2>Não deu certo desta vez</h2>
+        <p className="sub">{construcao.erro}</p>
+        <div className="botoes-erro">
+          <button className="botao-principal" onClick={aoTentarDeNovo}>
+            Tentar de novo
+          </button>
+          <button className="botao-secundario" onClick={aoVoltar}>
+            Voltar
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="gerando">
       <div className="orbita">
         <div className="orbita-centro">▶</div>
       </div>
-      <h2>Montando sua aula sobre {origem}</h2>
+      <h2>{construcao.titulo || `Montando sua aula sobre ${origem}`}</h2>
       <p className="sub">
-        {pedido.reels} reels para {pedido.objetivo}
+        {pedido.reels} reels para {pedido.objetivo} · leva cerca de 1 minuto
       </p>
       <ol className="etapas">
-        {ETAPAS.map((e, i) => (
-          <li key={e} className={i < etapa ? "feita" : i === etapa ? "atual" : ""}>
-            <span className="marca">{i < etapa ? "✓" : ""}</span>
-            {e}
+        {etapas.map(([id, rotulo], i) => (
+          <li key={id} className={i < atual ? "feita" : i === atual ? "atual" : ""}>
+            <span className="marca">{i < atual ? "✓" : ""}</span>
+            {rotulo}
           </li>
         ))}
       </ol>
+      {construcao.conceitos.length > 0 && (
+        <div className="plano">
+          <div className="rotulo">O que você vai aprender</div>
+          {construcao.conceitos.map((c, i) => (
+            <div key={c} className="plano-item">
+              <span className="plano-num">{i + 1}</span>
+              {c}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

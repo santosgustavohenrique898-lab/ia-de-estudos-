@@ -60,7 +60,7 @@ function estimarTempos(texto: string): Palavra[] {
 async function narrarElevenLabs(texto: string, chave: string, caminhoAudio: string): Promise<Palavra[]> {
   const voz = process.env.ELEVENLABS_VOICE_ID;
   if (!voz) throw new Error("Defina ELEVENLABS_VOICE_ID junto com ELEVENLABS_API_KEY.");
-  const resp = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voz}/with-timestamps`, {
+  const resp = await fetch(`${process.env.ELEVENLABS_API_URL ?? "https://api.elevenlabs.io"}/v1/text-to-speech/${voz}/with-timestamps`, {
     method: "POST",
     headers: { "xi-api-key": chave, "Content-Type": "application/json" },
     body: JSON.stringify({ text: texto, model_id: "eleven_multilingual_v2" }),

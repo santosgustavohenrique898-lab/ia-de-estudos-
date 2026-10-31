@@ -49,6 +49,68 @@ export const CenaVisual = ({ cena, cor }: { cena: Cena; cor: string }) => {
         </div>
       );
 
+    case "definicao":
+      return (
+        <div style={AREA}>
+          <Entra>
+            <div style={{ fontSize: 40, fontWeight: 800, color: cor, letterSpacing: 4, marginBottom: 24 }}>O QUE É</div>
+          </Entra>
+          <Entra atraso={6}>
+            <div style={{ fontSize: 96, fontWeight: 900, lineHeight: 1.05, marginBottom: 48 }}>{cena.termo}</div>
+          </Entra>
+          <Entra atraso={16}>
+            <div
+              style={{
+                fontSize: 54,
+                fontWeight: 600,
+                lineHeight: 1.3,
+                borderLeft: `10px solid ${cor}`,
+                paddingLeft: 36,
+              }}
+            >
+              {cena.definicao}
+            </div>
+          </Entra>
+        </div>
+      );
+
+    case "exemplo":
+      return (
+        <div style={AREA}>
+          <Entra>
+            <div
+              style={{
+                display: "inline-block",
+                fontSize: 40,
+                fontWeight: 800,
+                color: "#0B1020",
+                background: cor,
+                borderRadius: 999,
+                padding: "12px 32px",
+                marginBottom: 44,
+              }}
+            >
+              {cena.titulo}
+            </div>
+          </Entra>
+          <Entra atraso={10}>
+            <div
+              style={{
+                fontSize: 58,
+                fontWeight: 700,
+                lineHeight: 1.3,
+                background: "rgba(255,255,255,0.06)",
+                border: "3px solid rgba(255,255,255,0.15)",
+                borderRadius: 36,
+                padding: "52px 48px",
+              }}
+            >
+              “{cena.situacao}”
+            </div>
+          </Entra>
+        </div>
+      );
+
     case "lista":
       return (
         <div style={AREA}>
