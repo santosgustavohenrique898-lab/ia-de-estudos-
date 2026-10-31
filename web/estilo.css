@@ -333,9 +333,12 @@ h2 {
 
 .hero {
   display: grid;
-  grid-template-columns: 1.15fr 0.85fr;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
   gap: 48px;
   align-items: center;
+}
+.hero-texto {
+  min-width: 0;
 }
 
 .etiqueta-hero {
@@ -641,7 +644,7 @@ h2 {
 
 @media (max-width: 900px) {
   .hero {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   .vitrine {
     display: none;
@@ -1492,4 +1495,543 @@ h2 {
   margin-bottom: 6px;
   font-size: 15px;
   font-weight: 600;
+}
+
+/* ---------- Progresso: meta do dia, ofensiva e revisão ---------- */
+
+.topo-fogo {
+  font-weight: 900;
+  font-size: 15px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: #fff1e6;
+  color: #d9642a;
+}
+
+.painel {
+  margin: 0 0 18px;
+  padding: 14px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  box-shadow: var(--sombra-1);
+  backdrop-filter: blur(14px);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 580px;
+  animation: entrar 0.3s ease-out;
+}
+.painel-numeros {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.painel-num {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 10px 12px 12px;
+  border-radius: 16px;
+  background: var(--branco);
+  box-shadow: 0 3px 0 #e3e5f0, 0 8px 16px rgba(40, 30, 120, 0.05);
+  text-align: left;
+}
+.painel-num strong {
+  font-size: 19px;
+  font-weight: 900;
+}
+.painel-num span {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--suave);
+}
+.painel-num.fogo strong {
+  color: #d9642a;
+}
+.painel-num.meta i {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 4px;
+  background: var(--grad);
+  transition: width 0.4s ease-out;
+}
+.painel-num.meta.feita strong {
+  color: var(--verde);
+}
+.painel-num.meta.feita i {
+  background: var(--verde);
+}
+.chamada-revisao {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 18px;
+  background: linear-gradient(120deg, #efeaff, #e6f4ff);
+  border: 1px solid rgba(108, 76, 245, 0.25);
+  text-align: left;
+  transition: transform 0.12s;
+}
+.chamada-revisao:hover {
+  transform: translateY(-2px);
+}
+.chamada-icone {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--grad);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  font-weight: 900;
+  flex-shrink: 0;
+  box-shadow: 0 6px 14px rgba(108, 76, 245, 0.35);
+}
+.chamada-texto {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.chamada-texto strong {
+  font-size: 16px;
+}
+.chamada-texto small {
+  font-size: 13px;
+  color: var(--suave);
+}
+.chamada-seta {
+  font-weight: 800;
+  color: var(--roxo);
+  font-size: 14px;
+  white-space: nowrap;
+}
+.revisao-futura,
+.painel-nota {
+  font-size: 13px;
+  color: var(--suave);
+  padding: 0 4px;
+}
+.painel-nota {
+  color: var(--muito-suave);
+  font-size: 12px;
+}
+.aviso-inicio {
+  margin: -8px 0 14px;
+}
+
+/* ---------- Fotos do caderno ---------- */
+
+.fotos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+  gap: 8px;
+}
+.foto {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: var(--sombra-1);
+  background: #eef0f7;
+}
+.foto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.foto button {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(15, 18, 34, 0.7);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+/* ---------- Suas aulas ---------- */
+
+.suas-aulas {
+  margin-top: 18px;
+  max-width: 580px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.suas-aulas .rotulo {
+  margin-bottom: 2px;
+}
+.aula-salva {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+}
+.aula-salva-abrir {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  box-shadow: var(--sombra-1);
+  text-align: left;
+  transition: transform 0.12s;
+}
+.aula-salva-abrir:hover {
+  transform: translateY(-2px);
+}
+.aula-salva-play {
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  background: var(--grad);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+.aula-salva-texto {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.aula-salva-texto strong {
+  font-size: 15px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.aula-salva-texto small {
+  font-size: 12px;
+  color: var(--suave);
+}
+.aula-salva-apagar {
+  min-width: 40px;
+  padding: 0 10px;
+  border-radius: 14px;
+  color: var(--muito-suave);
+  font-weight: 800;
+  font-size: 13px;
+}
+.aula-salva-apagar.confirmar {
+  background: #fff0f0;
+  color: var(--vermelho);
+}
+.ver-todas {
+  align-self: flex-start;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--roxo);
+  padding: 4px;
+}
+
+/* ---------- Feed: meta, avisos e simulado ---------- */
+
+.hud-pilula.meta.feita {
+  background: #ecfbf1;
+  color: var(--verde);
+}
+
+.aviso-topo {
+  position: absolute;
+  z-index: 25;
+  top: 60px;
+  left: 12px;
+  right: 12px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.97);
+  box-shadow: var(--sombra-2);
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.4;
+  text-align: center;
+  animation: entrar 0.25s ease-out;
+}
+
+.carregando-card .botao-secundario {
+  margin-top: 6px;
+  padding: 12px 18px;
+}
+
+.pergunta {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--cor) 16%, transparent), transparent 60%), var(--fundo);
+}
+/* O texto que rola por baixo dos botões do topo some num degradê, em vez de ficar embaralhado com eles. */
+.pergunta::before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  right: 8px;
+  height: 84px;
+  background: linear-gradient(to bottom, rgba(246, 247, 252, 0.98) 55%, rgba(246, 247, 252, 0));
+  pointer-events: none;
+}
+.pergunta-rolagem {
+  position: relative;
+  height: 100%;
+  overflow-y: auto;
+  padding: 96px 18px 28px;
+  display: flex;
+  flex-direction: column;
+  scrollbar-width: thin;
+}
+.pergunta.tremer .alternativas {
+  animation: tremer 0.4s;
+}
+.texto-base {
+  margin-top: 14px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: var(--branco);
+  border-left: 4px solid var(--cor);
+  box-shadow: var(--sombra-1);
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--texto);
+}
+.pergunta-enunciado {
+  font-size: 19px;
+  line-height: 1.3;
+  margin: 14px 0 16px;
+}
+.alternativa-bloco {
+  display: flex;
+  flex-direction: column;
+}
+.pergunta .alternativas {
+  gap: 10px;
+}
+.pergunta .alternativa {
+  font-size: 15px;
+  padding: 12px 14px;
+}
+.por-que {
+  margin: 6px 6px 2px 50px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--suave);
+  animation: entrar 0.25s ease-out;
+}
+.por-que.certa {
+  color: #11803b;
+}
+.por-que.errada {
+  color: #c4383c;
+}
+.pergunta .feedback {
+  margin-top: 18px;
+}
+.nota-revisao {
+  font-weight: 700;
+  color: var(--texto) !important;
+}
+.lembrete {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--cor) 10%, #fff);
+  color: var(--texto) !important;
+}
+
+.barra-revisao {
+  position: absolute;
+  z-index: 21;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background: rgba(15, 18, 34, 0.06);
+}
+.barra-revisao > div {
+  height: 100%;
+  background: var(--grad);
+  transition: width 0.35s ease-out;
+}
+
+/* ---------- "Não entendi": explicação nova por cima do reel ---------- */
+
+.explicacao {
+  position: absolute;
+  inset: 0;
+  z-index: 18;
+  background: radial-gradient(circle at 50% 30%, color-mix(in srgb, var(--cor) 20%, transparent), transparent 60%), var(--fundo);
+  animation: entrar 0.25s ease-out;
+}
+.explicacao .reel-palco {
+  inset: 0;
+  cursor: default;
+}
+.explicacao .legenda {
+  right: 18px;
+}
+.explicacao-topo {
+  position: absolute;
+  z-index: 2;
+  top: 58px;
+  left: 12px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.explicacao-voltar {
+  padding: 9px 14px;
+  border-radius: 999px;
+  background: var(--texto);
+  color: #fff;
+  font-weight: 800;
+  font-size: 13px;
+  box-shadow: var(--sombra-1);
+}
+.explicacao-topo span {
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: var(--sombra-1);
+  font-weight: 800;
+  font-size: 13px;
+  color: var(--cor);
+}
+.explicacao-centro {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 30px;
+  text-align: center;
+}
+.explicacao-centro h2 {
+  font-size: 22px;
+}
+.explicacao-centro p {
+  color: var(--suave);
+  margin: 0;
+  font-size: 14px;
+}
+.explicacao-esperando {
+  position: absolute;
+  bottom: 9%;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--suave);
+  animation: pulsar 1.4s ease-in-out infinite;
+}
+.explicacao-fim {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 18px;
+  padding: 16px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: var(--sombra-2);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: entrar 0.25s ease-out;
+}
+.explicacao-fim p {
+  margin: 0;
+  font-weight: 800;
+  text-align: center;
+}
+
+/* ---------- Resumo ---------- */
+
+.meta-resumo {
+  width: 100%;
+  margin-bottom: 12px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: #f1f2f8;
+  text-align: left;
+}
+.meta-resumo > div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 2px 10px;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+.meta-resumo i {
+  display: block;
+  height: 8px;
+  border-radius: 999px;
+  background: #e2e4ee;
+  overflow: hidden;
+}
+.meta-resumo i span {
+  display: block;
+  height: 100%;
+  background: var(--grad);
+}
+.aprendi {
+  width: 100%;
+  text-align: left;
+  margin-bottom: 14px;
+}
+.aprendi-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border-left: 3px solid var(--roxo);
+  margin-bottom: 8px;
+}
+.aprendi-item b {
+  font-size: 15px;
+}
+.aprendi-item span {
+  font-size: 14px;
+  color: var(--suave);
+  line-height: 1.4;
+}
+.botao-secundario.largo {
+  width: 100%;
+  margin-bottom: 4px;
+}
+.botao-secundario:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+.situacao {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--verde);
+  margin-bottom: 8px;
+}
+
+@media (max-width: 900px) {
+  .painel-num strong {
+    font-size: 17px;
+  }
+  .chamada-seta {
+    display: none;
+  }
 }

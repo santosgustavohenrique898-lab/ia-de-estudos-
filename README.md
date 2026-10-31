@@ -1,4 +1,4 @@
-# ia-de-estudos
+# LearningFlix
 
 ## Como o produto funciona
 
@@ -21,6 +21,19 @@ O mesmo site também roda publicado como Artifact do Claude, sem servidor nenhum
 - Não pesquisa na internet: o tema é explicado com o conhecimento do próprio Claude.
 - A voz é a do navegador. Voz humana só na versão com servidor e chave da ElevenLabs.
 - Um pedido só monta o plano e todos os reels; cada reel entra no feed assim que termina de ser escrito. Se a resposta vier cortada, o site pede só os reels que faltaram.
+- Também aceita fotos do caderno ou da apostila (aba Foto): as fotos vão junto no pedido ao Claude.
+- Com os reels prontos, o Claude escreve um simulado no estilo do objetivo (ENEM, vestibular, concurso ou faculdade), com texto-base, 5 alternativas e o porquê de cada uma. Se o simulado falhar, a aula termina sem ele.
+- "Não entendi" pede ao Claude (modelo rápido) uma explicação nova da parte em que o aluno travou, tocada como um mini-reel por cima do reel.
+- No fim, o resumo da aula sai como imagem PNG para baixar e mandar no grupo (`web/resumoImagem.ts`).
+
+### Progresso salvo e revisão espaçada (`web/progresso.ts`)
+
+- O que o aluno errou (ou marcou com "Revisar" ou "Não entendi") vira um cartão de revisão: volta no dia seguinte, depois em 3 e em 7 dias; errar faz voltar para o dia seguinte.
+- Meta do dia (5, 10 ou 20 perguntas, todas contam) e ofensiva de dias seguidos batendo a meta.
+- As aulas ficam salvas (as 20 mais recentes) para assistir de novo sem gerar outra vez.
+- Onde fica salvo: na conta do Claude de quem usa (capacidade `db`, pasta privada `data/users/<id>`), quando a pessoa pode gravar no link (Contributor ou acima). Quem só pode ver o link, ou abre fora do Claude, tem o progresso salvo no próprio navegador.
+
+O Artifact declara `{"sample": {"images": true}, "db": {}, "user": {}, "downloads": true}`.
 
 Para gerar os arquivos dessa versão: `npm run site:artefato` (sai em `dist-artefato/`).
 

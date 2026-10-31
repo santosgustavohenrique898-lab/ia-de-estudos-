@@ -2,7 +2,7 @@
 # O Render lê este arquivo, pede as três chaves marcadas com sync: false e coloca o site no ar.
 services:
   - type: web
-    name: ia-de-estudos
+    name: learningflix
     runtime: node
     plan: free
     buildCommand: npm install --include=dev && npx vite build

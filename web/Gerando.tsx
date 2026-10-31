@@ -24,12 +24,19 @@ export const Gerando = ({
           ["escrevendo", escrevendo],
         ]
       : [
-          ["lendo", pedido.tipo === "pdf" ? "Lendo o seu PDF" : "Lendo o seu texto"],
+          ["lendo", pedido.tipo === "pdf" ? "Lendo o seu PDF" : pedido.tipo === "foto" ? "Lendo as suas fotos" : "Lendo o seu texto"],
           ["planejando", "Separando os conceitos principais"],
           ["escrevendo", escrevendo],
         ];
   const atual = etapas.findIndex(([id]) => id === construcao.etapa);
-  const origem = pedido.tipo === "pdf" ? `o PDF ${pedido.conteudo}` : pedido.tipo === "texto" ? "o seu texto" : `"${pedido.conteudo}"`;
+  const origem =
+    pedido.tipo === "pdf"
+      ? `o PDF ${pedido.conteudo}`
+      : pedido.tipo === "texto"
+        ? "o seu texto"
+        : pedido.tipo === "foto"
+          ? "as suas fotos"
+          : `"${pedido.conteudo}"`;
 
   if (construcao.erro) {
     return (

@@ -1,17 +1,26 @@
 import type { Cena, Reel } from "../src/schema";
-import { estilo } from "../src/pipeline/estilo";
+import { PUBLICO, estilo, type Objetivo } from "../src/pipeline/estilo";
+import type { Narracao } from "../src/pipeline/voz";
 import type { EventoServidor } from "./api";
 import type { Pedido } from "./Inicio";
+import type { Questao } from "./progresso";
 
 // Modo Artifact: publicado dentro do Claude, o site não tem servidor. Quem escreve a aula é o
 // Claude da própria pessoa que está usando (capacidade "sample" do Artifact), direto do navegador.
 // Diferenças para o servidor: não pesquisa na internet (usa o conhecimento do modelo, ou o texto
 // e o PDF do aluno) e a voz é a do navegador.
 
-type Sample = (
-  entrada: string,
-  opcoes?: { onText?: (u: { text: string; delta: string }) => void; signal?: AbortSignal },
-) => Promise<{ text: string; truncated: boolean }>;
+type OpcoesSample = {
+  onText?: (u: { text: string; delta: string }) => void;
+  signal?: AbortSignal;
+  images?: Blob[];
+  modelTier?: "quick" | "default" | "complex";
+  cache?: boolean;
+};
+type LimitesSample = { maxPromptBytes: number; images?: { maxCount: number; maxInputBytes: number; mediaTypes: string[] } };
+type Sample = ((entrada: string, opcoes?: OpcoesSample) => Promise<{ text: string; truncated: boolean }>) & {
+  limits?: () => Promise<LimitesSample>;
+};
 type ErroSample = { code?: string; message?: string };
 
 declare global {
@@ -35,13 +44,40 @@ export function claudeDaPagina(): Promise<Sample | null> {
   return sampleDaPagina;
 }
 
+// O que este Claude aceita de fotos (quantas por pedido, tamanho e formatos), ou null se não aceita.
+export type LimitesDeFoto = { maximo: number; bytes: number; tipos: string[] };
+export async function limitesDeFoto(): Promise<LimitesDeFoto | null> {
+  const sample = await claudeDaPagina();
+  const limites = await sample?.limits?.().catch(() => null);
+  const img = limites?.images;
+  return img && img.maxCount > 0 ? { maximo: Math.min(img.maxCount, 6), bytes: img.maxInputBytes, tipos: img.mediaTypes } : null;
+}
+
+// Narração vazia: a voz do navegador fala cena a cena e o tempo de cada palavra é estimado na hora.
+export const narracaoDoNavegador = (reel: Reel): Narracao => ({
+  audio: null,
+  duracao: 0,
+  palavras: [],
+  cenas: reel.cenas.map(() => ({ inicio: 0, fim: 0 })),
+});
+
 const LIMITE_CARACTERES = 150_000;
-type AulaPreparada = { pedido: Pedido; material: string | null };
+type AulaPreparada = { pedido: Pedido; material: string | null; imagens: File[] | null };
 const preparadas = new Map<string, AulaPreparada>();
 
 export async function prepararAulaNoClaude(pedido: Pedido): Promise<string> {
   if (!(await claudeDaPagina())) {
     throw new Error("Para gerar aulas, abra este link dentro do Claude (no site claude.ai ou no app).");
+  }
+  if (pedido.tipo === "foto") {
+    const fotos = pedido.fotos ?? [];
+    const limites = await limitesDeFoto();
+    if (!limites) throw new Error("Este app do Claude não aceita fotos. Abra o link pelo site claude.ai ou use \"Colar texto\".");
+    if (fotos.length === 0) throw new Error("Escolha pelo menos uma foto do caderno ou da apostila.");
+    if (fotos.length > limites.maximo) throw new Error(`Envie no máximo ${limites.maximo} fotos por aula.`);
+    const id = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    preparadas.set(id, { pedido, material: null, imagens: fotos });
+    return id;
   }
   let material: string | null = null;
   if (pedido.tipo === "texto") material = pedido.conteudo;
@@ -58,7 +94,7 @@ export async function prepararAulaNoClaude(pedido: Pedido): Promise<string> {
     if (material.length > LIMITE_CARACTERES) throw new Error("O material é grande demais para uma aula só. Envie um capítulo por vez.");
   }
   const id = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-  preparadas.set(id, { pedido, material });
+  preparadas.set(id, { pedido, material, imagens: null });
   return id;
 }
 
@@ -102,23 +138,31 @@ const EXEMPLO_REEL = JSON.stringify({
   },
 });
 
-const FORMATO = `Formato: responda só com linhas JSON, um objeto completo por linha, sem markdown e sem nenhum texto fora dos objetos.
-
-Cada cena tem "template", "fala" (o que a voz diz, em frases completas) e os campos do seu template:
+const CENAS = `Cada cena tem "template", "fala" (o que a voz diz, em frases completas) e os campos do seu template:
 - "gancho": "titulo" (até 8 palavras) e "subtitulo" (até 10 palavras, pode ser "")
 - "definicao": "termo" (até 4 palavras) e "definicao" (até 18 palavras)
 - "exemplo": "titulo" (até 5 palavras, como "Na prática" ou "Imagina assim") e "situacao" (até 25 palavras)
 - "lista": "titulo" e "itens" (2 a 4 itens de até 6 palavras)
 - "comparacao": "titulo", "esquerda" e "direita", cada lado {"nome": "...", "pontos": ["...", "..."]} com 2 ou 3 pontos curtos
 - "linha_do_tempo": "titulo" e "eventos" (2 a 4 itens {"data": "...", "texto": "..."} em ordem cronológica)
-- "fixacao": "frase" (até 14 palavras)
+- "fixacao": "frase" (até 14 palavras)`;
 
-O quiz de cada reel: {"pergunta": "...", "alternativas": ["...", "...", "...", "..."], "correta": 0, "explicacao": "..."}. São exatamente 4 alternativas curtas; "correta" é a posição da certa, de 0 a 3 (varie essa posição entre os reels); "explicacao" é uma frase dizendo por que ela está certa.
+const FORMATO = `Formato: responda só com linhas JSON, um objeto completo por linha, sem markdown e sem nenhum texto fora dos objetos.
+
+${CENAS}
+
+O quiz de cada reel: {"pergunta": "...", "alternativas": ["...", "...", "...", "..."], "correta": 0, "explicacao": "..."}. São exatamente 4 alternativas curtas; "correta" é a posição da certa, de 0 a 3 (varie essa posição entre os reels); "explicacao" é uma frase dizendo por que ela está certa, sem citar letras.
 
 Exemplo de uma linha de reel (só mostra o formato; o assunto é outro e o seu reel deve ser mais completo):
 ${EXEMPLO_REEL}`;
 
-function contexto({ pedido, material }: AulaPreparada) {
+function contexto({ pedido, material, imagens }: AulaPreparada) {
+  if (imagens) {
+    const fotos = imagens.length === 1 ? "a foto anexada" : `as ${imagens.length} fotos anexadas`;
+    return `${estilo(pedido.objetivo, "material")}
+
+O material de referência é ${fotos}: caderno, apostila, livro ou lousa do aluno. Leia com atenção o texto, os esquemas, as tabelas e as fórmulas. Ignore o que estiver ilegível ou cortado, e não invente o que não dá para ler.`;
+  }
   const base = material ? "material" : "conhecimento";
   const fonte = material
     ? `<material_do_aluno>\n${material}\n</material_do_aluno>`
@@ -128,7 +172,7 @@ function contexto({ pedido, material }: AulaPreparada) {
 
 function pedidoDaAula(aula: AulaPreparada) {
   const n = aula.pedido.reels;
-  const tarefa = aula.material
+  const tarefa = aula.material || aula.imagens
     ? `Tarefa: transforme o material do aluno numa aula em reels com até ${n} conceitos (menos, se o material for curto), na ordem certa para aprender: do mais básico ao mais avançado. Ensine o que está no material.`
     : `Tarefa: monte uma aula em reels com exatamente ${n} conceitos sobre esse assunto, na ordem certa para aprender: do mais básico ao mais avançado. Se o pedido for amplo ou vago, escolha o recorte que mais cai em prova para esse público.`;
   return `${contexto(aula)}
@@ -139,7 +183,7 @@ Cada reel ensina um conceito diferente, sem repetir o que outro reel já explico
 Responda nesta ordem:
 1. Primeira linha, o plano: {"tipo":"plano","titulo":"título curto da aula","conceitos":["conceito 1","conceito 2"]}
 2. Depois, um reel por linha, na ordem do plano: {"tipo":"reel","conceito":"...","cenas":[...],"quiz":{...}}
-Se não houver o que ensinar (texto sem sentido ou sem conteúdo de estudo), responda só: {"tipo":"erro","mensagem":"explicação curta para o aluno"}
+Se não houver o que ensinar (texto sem sentido, foto ilegível ou sem conteúdo de estudo), responda só: {"tipo":"erro","mensagem":"explicação curta para o aluno"}
 
 ${FORMATO}`;
 }
@@ -214,7 +258,7 @@ const ehObjeto = (v: unknown): v is Bruto => typeof v === "object" && v !== null
 const texto = (v: unknown) => (typeof v === "string" ? v.trim() : typeof v === "number" ? String(v) : "");
 const textos = (v: unknown) => (Array.isArray(v) ? v.map(texto).filter(Boolean) : []);
 
-function normalizarCena(o: unknown): Cena | null {
+export function normalizarCena(o: unknown): Cena | null {
   if (!ehObjeto(o)) return null;
   const fala = texto(o.fala);
   if (!fala) return null;
@@ -308,6 +352,8 @@ const SEM_CONTINUACAO = new Set([
   "invalid_request",
   "transform_error",
   "queue_overflow",
+  "images_unavailable",
+  "image_rejected",
 ]);
 
 function mensagemDoErro(e: ErroSample): string {
@@ -327,6 +373,10 @@ function mensagemDoErro(e: ErroSample): string {
       return "O Claude não quis montar uma aula com esse conteúdo. Tente outro assunto ou outro trecho.";
     case "prompt_too_large":
       return "O material é grande demais para uma aula só. Envie um capítulo por vez.";
+    case "images_unavailable":
+      return "Este app do Claude não aceita fotos. Abra o link pelo site claude.ai ou use \"Colar texto\".";
+    case "image_rejected":
+      return "Não consegui abrir uma das fotos. Tire outra (em JPG ou PNG, sem ser enorme) e tente de novo.";
     default:
       return "A conexão com o Claude falhou no meio do caminho. Tente de novo.";
   }
@@ -390,7 +440,7 @@ async function gerar(aula: AulaPreparada, emitir: (e: EventoServidor) => void, s
     if (i < 0) return;
     if (!reel.conceito) reel.conceito = plano!.conceitos[i];
     prontos[i] = reel;
-    emitir({ tipo: "reel", indice: i, reel, narracao: { audio: null, duracao: 0, palavras: [], cenas: reel.cenas.map(() => ({ inicio: 0, fim: 0 })) } });
+    emitir({ tipo: "reel", indice: i, reel, narracao: narracaoDoNavegador(reel) });
   };
 
   const receber = (o: unknown, pedidas: () => number[]) => {
@@ -410,13 +460,15 @@ async function gerar(aula: AulaPreparada, emitir: (e: EventoServidor) => void, s
   };
 
   // 1. Um pedido só: o plano chega primeiro e cada reel aparece no feed assim que termina de ser escrito.
-  emitir({ tipo: "etapa", etapa: aula.material ? "lendo" : "pesquisando" });
+  emitir({ tipo: "etapa", etapa: aula.material || aula.imagens ? "lendo" : "pesquisando" });
+  const fotos = aula.imagens ? { images: aula.imagens } : {};
   let comecou = false;
   const todas = () => intervalo(plano ? plano.conceitos.length : n);
   const ler = leitorDeObjetos((o) => receber(o, todas));
   let erro: ErroSample | null = null;
   try {
     const { text } = await sample(pedidoDaAula(aula), {
+      ...fotos,
       signal,
       onText: ({ delta }) => {
         if (!comecou) {
@@ -447,6 +499,7 @@ async function gerar(aula: AulaPreparada, emitir: (e: EventoServidor) => void, s
     let chegou = false;
     try {
       const { text } = await sample(pedidoDeReels(aula, planoFinal, pedidas), {
+        ...fotos,
         signal,
         onText: ({ delta }) => {
           chegou = true;
@@ -462,4 +515,136 @@ async function gerar(aula: AulaPreparada, emitir: (e: EventoServidor) => void, s
   }
   for (const indice of faltando) emitir({ tipo: "descartado", indice, motivo: "O Claude não conseguiu escrever este reel." });
   emitir({ tipo: "fim" });
+
+  // 3. Com os reels prontos, o simulado é escrito enquanto o aluno assiste.
+  const feitos = intervalo(planoFinal.conceitos.length)
+    .map((i) => prontos[i])
+    .filter((r): r is Reel => Boolean(r));
+  if (feitos.length > 0) await gerarSimulado(sample, aula.pedido.objetivo, planoFinal.titulo, feitos, emitir, signal);
+}
+
+// ---------- Simulado no fim da aula ----------
+
+const ESTILO_PROVA: Record<Objetivo, string> = {
+  ENEM: "do ENEM: um texto-base (situação do cotidiano, trecho de reportagem, gráfico descrito, dado ou experimento) e um comando que exige interpretar o texto e aplicar o conceito",
+  Vestibular: "de vestibular tradicional: enunciado direto que cobra o conceito com precisão, com um texto curto de apoio quando ajudar",
+  Concurso: "de banca de concurso: enunciado objetivo e alternativas parecidas que testam detalhes, exceções e pegadinhas comuns",
+  Faculdade: "de prova de faculdade: um caso ou problema curto que exige raciocinar com o conceito, não só decorar",
+};
+
+export const quantasQuestoes = (reels: number) => (reels <= 3 ? 3 : 5);
+
+function pedidoDoSimulado(objetivo: Objetivo, titulo: string, reels: Reel[], n: number) {
+  const aula = reels.map((r, i) => `${i + 1}. ${r.conceito}: ${r.cenas.map((c) => c.fala).join(" ")}`).join("\n\n");
+  return `Você é um professor que escreve questões de prova em português do Brasil.
+Público: ${PUBLICO[objetivo]}.
+
+A aula "${titulo}" ensinou isto ao aluno:
+${aula}
+
+Tarefa: escreva ${n} questões inéditas de múltipla escolha no estilo ${ESTILO_PROVA[objetivo]}. Cubra os conceitos da aula, da questão mais fácil para a mais difícil. Cobre só o que a aula ensinou.
+
+Cada questão tem:
+- "conceito": o conceito da aula que ela cobra.
+- "textoBase": texto de apoio com 2 a 5 frases, ou "" se a questão não precisar. Pode trazer situações e números hipotéticos, mas nunca atribua nada a uma pessoa, instituição ou pesquisa real.
+- "pergunta": o comando da questão, claro e completo.
+- "alternativas": exatamente 5, plausíveis, com uma só correta. Nada de "todas as anteriores" ou "nenhuma das anteriores".
+- "correta": a posição da alternativa certa, de 0 a 4. Varie a posição entre as questões.
+- "explicacao": 1 ou 2 frases dizendo por que a certa está certa.
+- "porQue": lista com 5 frases curtas, na ordem das alternativas, dizendo por que cada uma está certa ou errada. Não cite letras.
+
+Formato: responda só com linhas JSON, uma questão completa por linha, sem markdown e sem texto fora dos objetos:
+{"tipo":"questao","conceito":"...","textoBase":"...","pergunta":"...","alternativas":["...","...","...","...","..."],"correta":0,"explicacao":"...","porQue":["...","...","...","...","..."]}`;
+}
+
+export function normalizarQuestao(o: unknown): Questao | null {
+  if (!ehObjeto(o) || (o.tipo !== undefined && o.tipo !== "questao")) return null;
+  const base = normalizarQuiz(o);
+  if (!base || base.alternativas.length < 4) return null;
+  const porQue = textos(o.porQue ?? o.por_que);
+  return {
+    ...base,
+    textoBase: texto(o.textoBase ?? o.texto_base) || undefined,
+    porQue: porQue.length === base.alternativas.length ? porQue : undefined,
+    conceito: texto(o.conceito) || undefined,
+  };
+}
+
+// Cada questão aparece no feed assim que termina de ser escrita. Uma falha aqui não estraga a aula: só fica sem simulado.
+async function gerarSimulado(sample: Sample, objetivo: Objetivo, titulo: string, reels: Reel[], emitir: (e: EventoServidor) => void, signal: AbortSignal) {
+  const n = quantasQuestoes(reels.length);
+  emitir({ tipo: "simulado-gerando", total: n });
+  let feitas = 0;
+  const ler = leitorDeObjetos((o) => {
+    const questao = normalizarQuestao(o);
+    if (!questao || feitas >= n) return;
+    emitir({ tipo: "questao", indice: feitas++, questao });
+  });
+  try {
+    let chegou = false;
+    const { text } = await sample(pedidoDoSimulado(objetivo, titulo, reels, n), {
+      signal,
+      onText: ({ delta }) => {
+        chegou = true;
+        ler(delta);
+      },
+    });
+    if (!chegou) ler(text);
+  } catch (e) {
+    if (signal.aborted) return;
+    console.error("Falha ao gerar o simulado", e);
+  }
+  if (!signal.aborted) emitir({ tipo: "simulado-fim" });
+}
+
+// ---------- "Não entendi": outra explicação, mais simples ----------
+
+export async function explicarDeOutroJeito(
+  { reel, cena, objetivo, deNovo }: { reel: Reel; cena: number; objetivo: Objetivo; deNovo: boolean },
+  aoCena: (c: Cena) => void,
+  signal: AbortSignal,
+): Promise<void> {
+  const sample = await claudeDaPagina();
+  if (!sample) throw { code: "not_granted", message: "sem Claude" } satisfies ErroSample;
+  const pedido = `Você é um professor paciente que explica em reels curtos, em português do Brasil.
+Público: ${PUBLICO[objetivo]}.
+
+O aluno assistia a este reel sobre "${reel.conceito}":
+${reel.cenas.map((c, i) => `${i + 1}. ${c.fala}`).join("\n")}
+
+Ele tocou em "Não entendi" na parte ${cena + 1}: """${reel.cenas[cena].fala}"""
+
+Tarefa: explique essa ideia de outro jeito, mais simples, em 3 cenas:
+1. "exemplo": uma analogia ou situação do dia a dia que deixa a ideia concreta.
+2. "definicao" ou "lista": a ideia com palavras simples, passo a passo.
+3. "fixacao": a frase para lembrar.
+Cada fala tem no máximo 30 palavras. Não contradiga o reel e use só conhecimento consolidado.${
+    deNovo ? " O aluno já viu uma explicação e ainda não entendeu: use uma analogia bem diferente e ainda mais simples." : ""
+  }
+
+${CENAS}
+
+Formato: responda só com as 3 cenas, uma por linha, cada uma um objeto JSON completo como {"template":"exemplo","fala":"...","titulo":"...","situacao":"..."}, sem markdown e sem texto fora dos objetos.`;
+  const ler = leitorDeObjetos((o) => {
+    const c = normalizarCena(o);
+    if (c) aoCena(c);
+  });
+  let chegou = false;
+  const { text } = await sample(pedido, {
+    signal,
+    modelTier: "quick",
+    ...(deNovo ? { cache: false } : {}),
+    onText: ({ delta }) => {
+      chegou = true;
+      ler(delta);
+    },
+  });
+  if (!chegou) ler(text);
+}
+
+export function mensagemDaExplicacao(e: unknown): string {
+  const code = (e as ErroSample)?.code;
+  if (code === "not_granted") return "Para receber a explicação, permita que a aula use o Claude.";
+  if (code === "rate_limited") return "Muitos pedidos ao Claude agora. Espere um pouco e tente de novo.";
+  return "Não consegui explicar agora. Tente de novo.";
 }

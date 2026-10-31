@@ -60,3 +60,12 @@ export const Fundo3D = ({ denso = true }: { denso?: boolean }) => (
     {denso && <Cubo x="56%" y="6%" tamanho={54} profundidade={0.9} atraso={1.5} />}
   </div>
 );
+
+// Esfera com dois anéis em órbita: o "carregando" da página.
+export const Nucleo = ({ grande = false }: { grande?: boolean }) => (
+  <div className={grande ? "nucleo3d" : "nucleo3d pequeno"}>
+    <div className="orbita-anel a1" />
+    <div className="orbita-anel a2" />
+    <div className="nucleo-orbe" />
+  </div>
+);

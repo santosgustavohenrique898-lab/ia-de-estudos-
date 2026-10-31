@@ -3,10 +3,11 @@ import { Player, type PlayerRef } from "@remotion/player";
 import { CenaVisual } from "../src/remotion/templates/CenaVisual";
 import type { Reel } from "../src/schema";
 import type { Narracao } from "../src/pipeline/voz";
+import type { Objetivo } from "../src/pipeline/estilo";
 import { falar, vozDisponivel } from "./voz";
 import { urlAudio } from "./api";
-
-const MAX_POR_BLOCO = 4;
+import { Explicacao } from "./Explicacao";
+import { blocoDe, blocoFim } from "./legenda";
 
 // O aviso de "sem voz" aparece uma vez só por visita.
 let avisouSemVoz = false;
@@ -22,8 +23,12 @@ type Props = {
   velocidade: number;
   curtido: boolean;
   salvo: boolean;
+  objetivo: Objetivo;
+  // Dentro do Claude, "Não entendi" pede uma explicação nova; fora dele, repete a cena mais devagar.
+  podeExplicar: boolean;
   aoCurtir: (forcar: boolean) => void;
   aoSalvar: () => void;
+  aoNaoEntendi: () => void;
   aoMudo: () => void;
   aoVelocidade: () => void;
   aoTerminar: () => void;
@@ -52,6 +57,7 @@ export const ReelAoVivo = (p: Props) => {
   const [rodada, setRodada] = useState(0);
   const [aviso, setAviso] = useState<string | null>(null);
   const [coracao, setCoracao] = useState(0);
+  const [explicando, setExplicando] = useState(false);
   const player = useRef<PlayerRef>(null);
   const ultimoToque = useRef(0);
   const toqueSimples = useRef<number>(0);
@@ -65,7 +71,7 @@ export const ReelAoVivo = (p: Props) => {
       setTerminou(false);
       setPausado(false);
       setRodada((r) => r + 1);
-    }
+    } else setExplicando(false);
   }, [ativo]);
 
   // Modo voz humana: o áudio manda, e cena e palavra são lidas do tempo atual da gravação.
@@ -163,12 +169,27 @@ export const ReelAoVivo = (p: Props) => {
   };
 
   const naoEntendi = () => {
+    p.aoNaoEntendi();
+    if (p.podeExplicar) {
+      setPausado(true);
+      setExplicando(true);
+      return;
+    }
     if (audio) audio.currentTime = narracao.cenas[cena].inicio;
     setDevagar(true);
     setTerminou(false);
     setPausado(false);
     setRodada((r) => r + 1);
-    mostrarAviso("Beleza, vou repetir essa parte mais devagar.");
+    mostrarAviso("Beleza, vou repetir essa parte mais devagar. Ela também entrou na sua revisão.");
+  };
+
+  // Fechou a explicação: o reel volta do começo da cena em que a pessoa travou.
+  const voltarAoReel = () => {
+    if (audio) audio.currentTime = narracao.cenas[cena].inicio;
+    setExplicando(false);
+    setTerminou(false);
+    setPausado(false);
+    setRodada((r) => r + 1);
   };
 
   const fala = reel.cenas[cena].fala.split(/\s+/).filter(Boolean);
@@ -225,7 +246,7 @@ export const ReelAoVivo = (p: Props) => {
         </div>
       )}
 
-      {pausado && <div className="icone-pausa">▶</div>}
+      {pausado && !explicando && <div className="icone-pausa">▶</div>}
       {terminou && <div className="repetir">↻ toque para ver de novo · role para a pergunta ↑</div>}
       {coracao > 0 && (
         <div key={coracao} className="coracao-explode">
@@ -249,6 +270,10 @@ export const ReelAoVivo = (p: Props) => {
         <BotaoTrilho icone={p.mudo ? "🔇" : "🔊"} rotulo={p.mudo ? "Mudo" : "Som"} aoClicar={p.aoMudo} />
         <BotaoTrilho icone={`${p.velocidade}x`} rotulo="Velocidade" texto aoClicar={p.aoVelocidade} />
       </div>
+
+      {explicando && (
+        <Explicacao reel={reel} cena={cena} objetivo={p.objetivo} cor={cor} mudo={p.mudo} velocidade={p.velocidade} aoFechar={voltarAoReel} />
+      )}
     </div>
   );
 };
@@ -265,22 +290,3 @@ const BotaoTrilho = ({ icone, rotulo, ativo, texto, aoClicar }: { icone: string;
     <span className="trilho-rotulo">{rotulo}</span>
   </button>
 );
-
-// Blocos de legenda: até 4 palavras, quebrando no fim de frase.
-function blocoDe(palavras: string[], indice: number): number {
-  let inicio = 0;
-  while (true) {
-    const fim = blocoFim(palavras, inicio);
-    if (indice < fim || fim >= palavras.length) return inicio;
-    inicio = fim;
-  }
-}
-
-function blocoFim(palavras: string[], inicio: number): number {
-  let i = inicio;
-  while (i < palavras.length) {
-    i++;
-    if (i - inicio >= MAX_POR_BLOCO || /[.!?,;:]$/.test(palavras[i - 1])) break;
-  }
-  return i;
-}

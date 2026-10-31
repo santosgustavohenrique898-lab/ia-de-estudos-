@@ -27,7 +27,7 @@ const { values, positionals } = parseArgs({
   },
 });
 
-const MARCA = "IA de Estudos";
+const MARCA = "LearningFlix";
 
 async function main() {
   if (values.ajuda || (!values.demo && positionals.length === 0)) {
