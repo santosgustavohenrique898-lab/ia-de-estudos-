@@ -11,7 +11,7 @@
     "site:build": "vite build",
     "servidor": "tsx servidor/index.ts",
     "start": "vite build && tsx servidor/index.ts",
-    "site:previa": "VITE_PREVIA=1 vite build --outDir ../dist-previa"
+    "site:artefato": "VITE_ARTEFATO=1 vite build --outDir ../dist-artefato"
   },
   "keywords": [],
   "author": "",

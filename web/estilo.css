@@ -694,6 +694,17 @@ h2 {
 .gerando .sub {
   margin: 8px 0 26px;
 }
+.dica-permissao {
+  margin-top: 18px;
+  max-width: 420px;
+  padding: 12px 16px;
+  border-radius: 16px;
+  background: rgba(108, 76, 245, 0.08);
+  color: var(--texto);
+  font-size: 14px;
+  line-height: 1.45;
+  animation: entrar 0.3s ease-out;
+}
 
 /* Núcleo 3D: esfera no centro com dois anéis em órbita, em planos diferentes. */
 .nucleo3d {

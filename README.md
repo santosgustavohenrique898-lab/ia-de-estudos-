@@ -12,6 +12,18 @@
 
 Sem chave da ElevenLabs, a voz é a do navegador (robótica). Sem chave do Claude, o site não gera aulas.
 
+## Versão dentro do Claude (link do Artifact)
+
+O mesmo site também roda publicado como Artifact do Claude, sem servidor nenhum: quem abre o link gera a aula com o **próprio Claude** (a capacidade `sample` do Artifact), direto do navegador (`web/artefato.ts`).
+
+- Funciona para qualquer tema, texto colado ou PDF (o texto do PDF é lido no navegador).
+- Na primeira aula, o Claude pede permissão para a página usar a conta de quem está vendo; o uso sai do plano dessa pessoa.
+- Não pesquisa na internet: o tema é explicado com o conhecimento do próprio Claude.
+- A voz é a do navegador. Voz humana só na versão com servidor e chave da ElevenLabs.
+- Um pedido só monta o plano e todos os reels; cada reel entra no feed assim que termina de ser escrito. Se a resposta vier cortada, o site pede só os reels que faltaram.
+
+Para gerar os arquivos dessa versão: `npm run site:artefato` (sai em `dist-artefato/`).
+
 ## Rodar no seu computador
 
 Precisa de Node 20 ou mais novo.

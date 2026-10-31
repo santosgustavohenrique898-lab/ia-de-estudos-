@@ -62,9 +62,13 @@ const App = () => {
   const [construcao, setConstrucao] = useState<Construcao>(CONSTRUCAO_INICIAL);
   const [desempenho, setDesempenho] = useState<Desempenho>(DESEMPENHO_INICIAL);
   const parar = useRef<() => void>(() => {});
+  // Cada aula pedida ganha um número; respostas de uma aula abandonada são ignoradas.
+  const geracao = useRef(0);
 
   const iniciar = (p: Pedido) => {
     parar.current();
+    parar.current = () => {};
+    const minha = ++geracao.current;
     destravarVoz();
     setPedido(p);
     setDesempenho(DESEMPENHO_INICIAL);
@@ -72,17 +76,24 @@ const App = () => {
     setTela("gerando");
     criarAula(p)
       .then((id) => {
+        if (geracao.current !== minha) return;
         parar.current = ouvirAula(id, (e) => setConstrucao((c) => aplicar(c, e)));
       })
-      .catch((erro: Error) => setConstrucao((c) => ({ ...c, terminou: true, erro: erro.message })));
+      .catch((erro: Error) => {
+        if (geracao.current === minha) setConstrucao((c) => ({ ...c, terminou: true, erro: erro.message }));
+      });
   };
 
   useEffect(() => {
     if (tela === "gerando" && !construcao.erro && primeiroPronto(construcao)) setTela("feed");
+    // Um erro que chega com o feed aberto (por exemplo, o Claude recusou no meio) vai para a tela de erro.
+    if (tela === "feed" && construcao.erro) setTela("gerando");
   }, [tela, construcao]);
 
   const voltar = () => {
     parar.current();
+    parar.current = () => {};
+    geracao.current++;
     setTela("inicio");
   };
 

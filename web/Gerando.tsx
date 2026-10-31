@@ -1,6 +1,7 @@
 import type { Pedido } from "./Inicio";
 import type { Construcao } from "./main";
 import { Fundo3D } from "./Efeitos3D";
+import { MODO_ARTEFATO } from "./api";
 
 export const Gerando = ({
   pedido,
@@ -13,17 +14,19 @@ export const Gerando = ({
   aoTentarDeNovo: () => void;
   aoVoltar: () => void;
 }) => {
+  // Dentro do Claude (Artifact) não há pesquisa na internet nem gravação de voz no servidor.
+  const escrevendo = MODO_ARTEFATO ? "Escrevendo os reels e as perguntas" : "Escrevendo, conferindo e gravando a voz dos reels";
   const etapas =
     pedido.tipo === "tema"
       ? [
-          ["pesquisando", "Pesquisando o assunto na internet"],
+          ["pesquisando", MODO_ARTEFATO ? "Reunindo o que você precisa saber" : "Pesquisando o assunto na internet"],
           ["planejando", "Separando os conceitos principais"],
-          ["escrevendo", "Escrevendo, conferindo e gravando a voz dos reels"],
+          ["escrevendo", escrevendo],
         ]
       : [
           ["lendo", pedido.tipo === "pdf" ? "Lendo o seu PDF" : "Lendo o seu texto"],
           ["planejando", "Separando os conceitos principais"],
-          ["escrevendo", "Escrevendo, conferindo e gravando a voz dos reels"],
+          ["escrevendo", escrevendo],
         ];
   const atual = etapas.findIndex(([id]) => id === construcao.etapa);
   const origem = pedido.tipo === "pdf" ? `o PDF ${pedido.conteudo}` : pedido.tipo === "texto" ? "o seu texto" : `"${pedido.conteudo}"`;
@@ -67,6 +70,11 @@ export const Gerando = ({
           </li>
         ))}
       </ol>
+      {MODO_ARTEFATO && atual <= 0 && (
+        <p className="dica-permissao">
+          Na primeira vez, o Claude pede sua permissão para criar a aula. Toque em <b>Permitir</b>.
+        </p>
+      )}
       {construcao.conceitos.length > 0 && (
         <div className="plano">
           <div className="rotulo">O que você vai aprender</div>

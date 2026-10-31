@@ -3,10 +3,13 @@ import { Player, type PlayerRef } from "@remotion/player";
 import { CenaVisual } from "../src/remotion/templates/CenaVisual";
 import type { Reel } from "../src/schema";
 import type { Narracao } from "../src/pipeline/voz";
-import { falar } from "./voz";
+import { falar, vozDisponivel } from "./voz";
 import { urlAudio } from "./api";
 
 const MAX_POR_BLOCO = 4;
+
+// O aviso de "sem voz" aparece uma vez só por visita.
+let avisouSemVoz = false;
 
 type Props = {
   reel: Reel;
@@ -28,7 +31,7 @@ type Props = {
 
 // Reel tocado ao vivo no navegador: a animação vem dos mesmos templates do vídeo exportado
 // e a legenda acompanha a palavra dita. A voz é a gravação humana feita no servidor (ElevenLabs);
-// se o servidor não tiver voz configurada, o navegador fala cena a cena.
+// sem ela (dentro do Claude ou sem a chave), o navegador fala cena a cena.
 export const ReelAoVivo = (p: Props) => {
   const { reel, narracao, cor, ativo } = p;
   const audio = useMemo(() => (narracao.audio ? new Audio(urlAudio(narracao.audio)) : null), [narracao.audio]);
@@ -129,6 +132,15 @@ export const ReelAoVivo = (p: Props) => {
     setAviso(texto);
     setTimeout(() => setAviso(null), 2600);
   };
+
+  // Alguns navegadores (como o de dentro de certos apps) não têm voz em português: avisa em vez de ficar mudo sem explicação.
+  useEffect(() => {
+    if (!ativo || audio || p.mudo || avisouSemVoz || vozDisponivel()) return;
+    avisouSemVoz = true;
+    setAviso("Este navegador não tem voz em português. Abra o link no Chrome ou no Safari para ouvir a narração.");
+    setTimeout(() => setAviso(null), 6000);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ativo]);
 
   // Um toque pausa; dois toques rápidos curtem, como nos apps de vídeo.
   const tocar = () => {

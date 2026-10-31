@@ -3,34 +3,13 @@ import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import type { z } from "zod/v4";
 import { Checagem, PlanoAula, Reel } from "../schema.js";
 import type { Material } from "./ingestao.js";
+import { PUBLICO, estilo, type Objetivo } from "./estilo.js";
+
+export type { Objetivo };
 
 const MODELO = process.env.CLAUDE_MODEL ?? "claude-opus-5-5";
 
 const client = new Anthropic();
-
-export type Objetivo = "ENEM" | "Vestibular" | "Concurso" | "Faculdade";
-
-const PUBLICO: Record<Objetivo, string> = {
-  ENEM: "estudante do ensino médio se preparando para o ENEM; foque em entender e interpretar, com exemplos do cotidiano",
-  Vestibular: "vestibulando; foque em conteúdo cobrado em vestibulares tradicionais, com nomes, datas e conceitos precisos",
-  Concurso: "concurseiro; foque em definições exatas, classificações e pegadinhas de banca",
-  Faculdade: "universitário; pode aprofundar, usar termos técnicos e explicar o mecanismo por trás",
-};
-
-function estilo(objetivo: Objetivo) {
-  return `Você é um professor brilhante que explica qualquer assunto em reels educativos, em português do Brasil.
-Público: ${PUBLICO[objetivo]}.
-
-Como cada reel deve ser:
-- Ensina UM conceito, com 4 a 6 cenas e 50 a 80 segundos de fala no total (cerca de 130 a 200 palavras somando as falas).
-- Cena 1 é um gancho que prende nos 3 primeiros segundos: uma pergunta intrigante, um fato surpreendente ou uma pegadinha de prova.
-- Explique o PORQUÊ, não só o quê. Use pelo menos uma cena "definicao" (o termo explicado em palavras simples) e uma cena "exemplo" (uma situação do dia a dia ou uma analogia).
-- Use "lista", "comparacao" ou "linha_do_tempo" quando o conteúdo tiver partes, contrastes ou ordem no tempo.
-- A última cena é "fixacao": a ideia que o aluno leva para a prova.
-- Fale como um professor jovem, próximo e animado, frases curtas, sem gírias forçadas. Escreva números e siglas como devem ser falados.
-- O texto na tela é curto e complementa a fala; nunca repete a fala inteira.
-- Use apenas fatos que estão no material de referência. Não invente datas, números, nomes ou leis.`;
-}
 
 // O material vai primeiro e com cache: todas as chamadas da mesma aula reaproveitam esse prefixo.
 function sistema(material: Material, objetivo: Objetivo): Anthropic.Beta.BetaTextBlockParam[] {

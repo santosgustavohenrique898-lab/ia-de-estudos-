@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Player } from "@remotion/player";
 import { CenaVisual } from "../src/remotion/templates/CenaVisual";
 import type { Cena } from "../src/schema";
-import { statusServidor } from "./api";
+import { MODO_ARTEFATO, statusServidor } from "./api";
 import { Fundo3D, useParallax } from "./Efeitos3D";
 
 export type Objetivo = "ENEM" | "Vestibular" | "Concurso" | "Faculdade";
@@ -34,10 +34,14 @@ export const Inicio = ({ aoGerar }: { aoGerar: (p: Pedido) => void }) => {
   const [reels, setReels] = useState(3);
   const seletor = useRef<HTMLInputElement>(null);
   const [semIA, setSemIA] = useState(false);
+  const [vozHumana, setVozHumana] = useState(false);
   useParallax();
 
   useEffect(() => {
-    statusServidor().then((s) => setSemIA(s === null || !s.ia));
+    statusServidor().then((s) => {
+      setSemIA(s === null || !s.ia);
+      setVozHumana(Boolean(s?.voz));
+    });
   }, []);
 
   const conteudo = tipo === "tema" ? tema.trim() : tipo === "texto" ? texto.trim() : arquivo?.name ?? "";
@@ -163,7 +167,13 @@ export const Inicio = ({ aoGerar }: { aoGerar: (p: Pedido) => void }) => {
             <button className="botao-principal" disabled={!pronto} onClick={gerar}>
               Gerar minha aula em reels
             </button>
-            {semIA && <div className="erro-linha">O servidor ainda não está ligado à IA. Veja o guia de configuração no README.</div>}
+            {semIA && (
+              <div className="erro-linha">
+                {MODO_ARTEFATO
+                  ? "Para gerar aulas, abra este link dentro do Claude (no site claude.ai ou no app)."
+                  : "O servidor ainda não está ligado à IA. Veja o guia de configuração no README."}
+              </div>
+            )}
           </div>
         </section>
 
@@ -192,7 +202,7 @@ export const Inicio = ({ aoGerar }: { aoGerar: (p: Pedido) => void }) => {
             <div className="chip3d chip-xp">⚡ +15 XP</div>
             <div className="chip3d chip-certo">✓ Mandou bem!</div>
             <div className="chip3d chip-fogo">🔥 3 seguidas</div>
-            <div className="chip3d chip-voz">🎙️ Voz humana</div>
+            <div className="chip3d chip-voz">{vozHumana ? "🎙️ Voz humana" : "🎙️ Com narração"}</div>
             <div className="sombra-chao" />
           </div>
         </aside>

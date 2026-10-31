@@ -1,5 +1,5 @@
-// Voz do protótipo: a síntese de fala do próprio navegador (grátis, sem servidor).
-// No produto final entra a voz da ElevenLabs gerada no servidor.
+// Voz do navegador (grátis, sem servidor). É a voz usada dentro do Claude (Artifact) e
+// quando o servidor não tem a chave da ElevenLabs; com a chave, os reels vêm com voz humana gravada.
 
 const temVoz = typeof window !== "undefined" && "speechSynthesis" in window;
 
@@ -55,12 +55,15 @@ export function falar(texto: string, { velocidade, mudo, aoPalavra, aoFim }: Opc
 
   let encerrado = false;
   let recebeuPalavras = false;
+  let seguranca = 0;
+  let espera = 0;
   const comeco = performance.now();
   const terminar = () => {
     if (encerrado) return;
     encerrado = true;
     clearInterval(relogio);
     clearTimeout(seguranca);
+    clearTimeout(espera);
     aoFim();
   };
 
@@ -72,7 +75,18 @@ export function falar(texto: string, { velocidade, mudo, aoPalavra, aoFim }: Opc
     aoPalavra(i);
   }, 60);
 
-  let seguranca: number;
+  // Sem fala de verdade (bloqueada, com defeito ou que nunca começou): a legenda e a troca de cena
+  // seguem o tempo estimado das palavras, em vez de pular a cena.
+  let estimando = false;
+  const seguirNoRitmoEstimado = () => {
+    if (encerrado || estimando) return;
+    estimando = true;
+    recebeuPalavras = false;
+    clearTimeout(seguranca);
+    const passou = (performance.now() - comeco) / 1000;
+    seguranca = window.setTimeout(terminar, Math.max(0, duracaoEstimada + 0.4 - passou) * 1000);
+  };
+
   const voz = escolherVoz();
   if (mudo || !temVoz || !voz) {
     seguranca = window.setTimeout(terminar, (duracaoEstimada + 0.4) * 1000);
@@ -81,6 +95,17 @@ export function falar(texto: string, { velocidade, mudo, aoPalavra, aoFim }: Opc
     u.voice = voz;
     u.lang = voz.lang;
     u.rate = velocidade;
+    let comecouAFalar = false;
+    u.onstart = () => {
+      comecouAFalar = true;
+      clearTimeout(espera);
+      if (estimando && !encerrado) {
+        // Começou atrasada: volta a deixar a voz mandar no tempo.
+        estimando = false;
+        clearTimeout(seguranca);
+        seguranca = window.setTimeout(terminar, (duracaoEstimada * 2.5 + 3) * 1000);
+      }
+    };
     u.onboundary = (e) => {
       if (e.name && e.name !== "word") return;
       recebeuPalavras = true;
@@ -89,17 +114,22 @@ export function falar(texto: string, { velocidade, mudo, aoPalavra, aoFim }: Opc
       aoPalavra(i);
     };
     u.onend = terminar;
-    u.onerror = terminar;
+    u.onerror = seguirNoRitmoEstimado;
     speechSynthesis.cancel();
     speechSynthesis.speak(u);
     // Alguns navegadores às vezes não disparam onend; não deixa o reel travar.
     seguranca = window.setTimeout(terminar, (duracaoEstimada * 2.5 + 3) * 1000);
+    // Se a fala não começar em 3 segundos, segue no ritmo estimado.
+    espera = window.setTimeout(() => {
+      if (!comecouAFalar) seguirNoRitmoEstimado();
+    }, 3000);
   }
 
   return () => {
     encerrado = true;
     clearInterval(relogio);
     clearTimeout(seguranca);
+    clearTimeout(espera);
     if (temVoz) speechSynthesis.cancel();
   };
 }
