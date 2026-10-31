@@ -11,31 +11,45 @@ export type Narracao = {
   cenas: { inicio: number; fim: number }[];
 };
 
-const PAUSA_ENTRE_CENAS = 0.35;
+// A cena troca um instante antes de a voz começar a fala dela, para a animação entrar junto com a voz.
+const ANTECIPACAO = 0.15;
 
 export async function narrar(reel: Reel, caminhoAudio: string): Promise<Narracao> {
   const falas = reel.cenas.map((c) => c.fala.trim());
+  const texto = falas.join(" ");
   const chave = process.env.ELEVENLABS_API_KEY;
-  const palavras = chave
-    ? await narrarElevenLabs(falas.join(" "), chave, caminhoAudio)
-    : estimarTempos(falas.join(" "));
+  let gravadas: Palavra[] | null = null;
+  if (chave) {
+    try {
+      gravadas = await narrarElevenLabs(texto, chave, caminhoAudio);
+    } catch (erro) {
+      // Sem voz humana neste reel (créditos acabaram, chave ou voz errada): o reel não se perde,
+      // segue com a voz do navegador.
+      console.error("Voz humana falhou neste reel; usando a voz do navegador.", erro instanceof Error ? erro.message : erro);
+    }
+  }
+  const palavras = gravadas ?? estimarTempos(texto);
 
-  // Divide as palavras entre as cenas pela contagem de palavras de cada fala.
-  const cenas: Narracao["cenas"] = [];
+  // Em que palavra começa e termina cada cena (pela contagem de palavras de cada fala).
+  const faixas: { primeira: number; ultima: number }[] = [];
   let i = 0;
   for (const fala of falas) {
     const n = contarPalavras(fala);
-    const primeira = palavras[i];
-    const ultima = palavras[Math.min(i + n, palavras.length) - 1];
-    cenas.push({ inicio: primeira?.inicio ?? 0, fim: (ultima?.fim ?? 0) + PAUSA_ENTRE_CENAS });
+    faixas.push({ primeira: Math.min(i, palavras.length - 1), ultima: Math.max(0, Math.min(i + n, palavras.length) - 1) });
     i += n;
   }
-  for (let k = 1; k < cenas.length; k++) cenas[k].inicio = cenas[k - 1].fim;
-  cenas[0].inicio = 0;
+  const inicios = faixas.map((f, k) => {
+    if (k === 0) return 0;
+    const fimAnterior = palavras[faixas[k - 1].ultima]?.fim ?? 0;
+    const comecoDaFala = palavras[f.primeira]?.inicio ?? fimAnterior;
+    return Math.max(fimAnterior, comecoDaFala - ANTECIPACAO);
+  });
+  const fimDaFala = palavras[palavras.length - 1]?.fim ?? 0;
+  const cenas = inicios.map((inicio, k) => ({ inicio, fim: k + 1 < inicios.length ? inicios[k + 1] : fimDaFala + 0.5 }));
 
   return {
-    audio: chave ? caminhoAudio : null,
-    duracao: cenas[cenas.length - 1].fim + 0.5,
+    audio: gravadas ? caminhoAudio : null,
+    duracao: fimDaFala + 0.5,
     palavras,
     cenas,
   };

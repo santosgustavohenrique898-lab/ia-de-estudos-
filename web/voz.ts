@@ -3,17 +3,29 @@
 
 const temVoz = typeof window !== "undefined" && "speechSynthesis" in window;
 
+// Nota de cada voz: as neurais do Edge ("Online (Natural)") e as baixadas da Apple ("Premium",
+// "Enhanced", "Melhorada") soam quase humanas; a do Google vem logo depois; as compactas por último.
+function nota(v: SpeechSynthesisVoice): number {
+  const nome = v.name.toLowerCase();
+  let n = 0;
+  if (/natural|neural|online/.test(nome)) n += 40;
+  if (/premium|enhanced|melhorad|aprimorad|alta qualidade/.test(nome)) n += 30;
+  if (/google/.test(nome)) n += 20;
+  if (/francisca|thalita|antonio|luciana|felipe|fernanda/.test(nome)) n += 5;
+  return n;
+}
+
 function escolherVoz(): SpeechSynthesisVoice | null {
   if (!temVoz) return null;
   const vozes = speechSynthesis.getVoices();
-  const br = vozes.filter((v) => v.lang.replace("_", "-").toLowerCase() === "pt-br");
-  const preferidas = ["Francisca", "Thalita", "Google", "Luciana", "Natural"];
-  for (const nome of preferidas) {
-    const v = br.find((x) => x.name.includes(nome));
-    if (v) return v;
-  }
+  const br = vozes.filter((v) => v.lang.replace("_", "-").toLowerCase() === "pt-br").sort((a, b) => nota(b) - nota(a));
   return br[0] ?? vozes.find((v) => v.lang.toLowerCase().startsWith("pt")) ?? null;
 }
+
+// Quanto a voz escolhida demora de verdade em relação à nossa estimativa. Serve para as vozes que
+// não avisam qual palavra estão dizendo (como a do Google no Chrome): depois da primeira cena,
+// a legenda passa a andar no ritmo real daquela voz.
+const ritmoDaVoz = new Map<string, number>();
 
 // Navegadores só liberam áudio depois de um toque; chame isto dentro de um clique.
 export function destravarVoz() {
@@ -51,13 +63,17 @@ export function falar(texto: string, { velocidade, mudo, aoPalavra, aoFim }: Opc
     tempos.push(t);
     t += (0.2 + p.length * 0.045 + (/[.!?]$/.test(p) ? 0.3 : /[,;:]$/.test(p) ? 0.12 : 0)) / velocidade;
   }
-  const duracaoEstimada = t;
+  const voz = escolherVoz();
+  const ritmo = (voz && !mudo && ritmoDaVoz.get(voz.name)) || 1;
+  for (let k = 0; k < tempos.length; k++) tempos[k] *= ritmo;
+  const duracaoEstimada = t * ritmo;
 
   let encerrado = false;
   let recebeuPalavras = false;
   let seguranca = 0;
   let espera = 0;
-  const comeco = performance.now();
+  // Relógio da legenda: começa quando a voz começa de fato (ou já, se não houver voz).
+  let comeco = performance.now();
   const terminar = () => {
     if (encerrado) return;
     encerrado = true;
@@ -87,7 +103,6 @@ export function falar(texto: string, { velocidade, mudo, aoPalavra, aoFim }: Opc
     seguranca = window.setTimeout(terminar, Math.max(0, duracaoEstimada + 0.4 - passou) * 1000);
   };
 
-  const voz = escolherVoz();
   if (mudo || !temVoz || !voz) {
     seguranca = window.setTimeout(terminar, (duracaoEstimada + 0.4) * 1000);
   } else {
@@ -96,8 +111,11 @@ export function falar(texto: string, { velocidade, mudo, aoPalavra, aoFim }: Opc
     u.lang = voz.lang;
     u.rate = velocidade;
     let comecouAFalar = false;
+    let inicioDaFala = 0;
     u.onstart = () => {
       comecouAFalar = true;
+      inicioDaFala = performance.now();
+      comeco = inicioDaFala;
       clearTimeout(espera);
       if (estimando && !encerrado) {
         // Começou atrasada: volta a deixar a voz mandar no tempo.
@@ -113,7 +131,16 @@ export function falar(texto: string, { velocidade, mudo, aoPalavra, aoFim }: Opc
       while (i + 1 < inicios.length && inicios[i + 1] <= e.charIndex) i++;
       aoPalavra(i);
     };
-    u.onend = terminar;
+    u.onend = () => {
+      // Aprende o ritmo real desta voz para as próximas cenas (só quando a fala correu inteira).
+      if (comecouAFalar && !recebeuPalavras && !estimando && !encerrado && duracaoEstimada > 1.5) {
+        const real = (performance.now() - inicioDaFala) / 1000;
+        const novo = Math.min(2, Math.max(0.5, (real / duracaoEstimada) * ritmo));
+        const antigo = ritmoDaVoz.get(voz.name);
+        ritmoDaVoz.set(voz.name, antigo ? antigo * 0.5 + novo * 0.5 : novo);
+      }
+      terminar();
+    };
     u.onerror = seguirNoRitmoEstimado;
     speechSynthesis.cancel();
     speechSynthesis.speak(u);

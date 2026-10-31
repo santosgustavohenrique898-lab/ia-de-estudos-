@@ -38,15 +38,21 @@ Para mexer no visual com recarga automática, rode `npm run servidor` num termin
 
 ## Colocar no ar: o que você precisa fazer
 
-1. **Chave do Claude (a IA)**: crie uma conta em https://console.anthropic.com, coloque créditos em *Billing* e gere uma chave em *API Keys*. Ela vai na variável `ANTHROPIC_API_KEY`.
-2. **Voz humana (ElevenLabs)**: crie uma conta em https://elevenlabs.io. Em *Voice Library*, filtre por português do Brasil, escolha uma voz e adicione às suas vozes; copie o *Voice ID* para `ELEVENLABS_VOICE_ID`. Gere a chave de API para `ELEVENLABS_API_KEY`. Para vender o produto, use um plano pago, que libera uso comercial.
-3. **Hospedagem**: qualquer serviço que rode Node continuamente serve. Exemplo no Render (https://render.com):
-   - *New > Web Service*, conecte este repositório do GitHub;
-   - Build command: `npm install && npx vite build`;
-   - Start command: `npx tsx servidor/index.ts`;
-   - em *Environment*, adicione `ANTHROPIC_API_KEY`, `ELEVENLABS_API_KEY` e `ELEVENLABS_VOICE_ID`;
-   - o Render dá um endereço `https://...onrender.com`; depois dá para ligar um domínio seu.
+A voz humana só funciona na versão hospedada: o link dentro do Claude não pode chamar serviços de fora.
+
+1. **Voz humana (ElevenLabs)**: crie uma conta em https://elevenlabs.io.
+   - Em *Voices > Explore*, filtre por português do Brasil, ouça e escolha uma voz de narração; clique em *Add to my voices*.
+   - Em *My voices*, abra a voz e copie o *Voice ID*: ele vai em `ELEVENLABS_VOICE_ID`.
+   - Em *API Keys*, crie uma chave com permissão de *Text to Speech*: ela vai em `ELEVENLABS_API_KEY`.
+   - O plano gratuito serve para testar. Para vender, use um plano pago, que libera uso comercial. Cada reel gasta cerca de mil caracteres.
+2. **A IA (Claude)**: em https://console.anthropic.com, coloque créditos em *Billing* e gere uma chave em *API Keys*. Ela vai em `ANTHROPIC_API_KEY`.
+3. **Hospedagem (Render)**: crie uma conta em https://render.com entrando com o GitHub.
+   - *New > Blueprint*, escolha este repositório. O Render lê o `render.yaml`, pede as três chaves acima e publica o site.
+   - Em alguns minutos o site fica no ar num endereço `https://...onrender.com`; depois dá para ligar um domínio seu.
+   - O plano gratuito do Render "dorme" depois de um tempo sem uso, e a primeira visita demora cerca de 1 minuto. Para vender, use um plano pago.
 4. Opcional: `AULAS_POR_HORA` limita quantas aulas cada pessoa gera por hora (padrão 10), para proteger seus créditos.
+
+Como a voz humana entra no reel: a fala do reel inteiro é gravada de uma vez (sem cortes entre as cenas), e a ElevenLabs devolve o tempo de cada palavra. A legenda acende exatamente a palavra dita, e cada cena entra um instante antes de a voz começar a falar dela. Se a voz falhar num reel (créditos acabaram, chave ou voz errada), o reel não se perde: ele toca com a voz do navegador e o motivo aparece no log do servidor.
 
 **Custo estimado por aula de 3 reels** (estimativa; confira no painel depois das primeiras aulas): IA com o modelo padrão (`claude-opus-5-5`) entre US$ 0,50 e US$ 1,00, contando pesquisa e checagem; voz de cerca de 3 mil caracteres na ElevenLabs. Dá para trocar o modelo em `CLAUDE_MODEL`.
 
@@ -97,5 +103,5 @@ Os vídeos saem em `saida/<titulo-da-aula>/`.
 
 - PDF escaneado (foto) ainda não funciona: não há OCR.
 - Material com mais de 150 mil caracteres é recusado; envie um capítulo por vez.
-- Voz só pela ElevenLabs por enquanto; Azure (mais barata) é o próximo passo.
+- Voz humana só pela ElevenLabs por enquanto; Azure (mais barata) é o próximo passo.
 - O caminho da IA (`npm run gerar`) ainda não foi testado com uma chave real; o modo demo foi renderizado e conferido.
