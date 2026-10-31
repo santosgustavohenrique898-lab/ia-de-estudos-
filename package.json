@@ -1,12 +1,14 @@
 {
-  "name": "reels-estudo",
+  "name": "ia-de-estudos",
   "version": "1.0.0",
   "description": "Protótipo: transforma matéria de estudo em reels animados com voz",
   "scripts": {
     "gerar": "tsx src/cli.ts",
     "demo": "tsx src/cli.ts --demo",
     "studio": "remotion studio src/remotion/index.ts",
-    "typecheck": "tsc"
+    "typecheck": "tsc",
+    "site": "vite",
+    "site:build": "vite build"
   },
   "keywords": [],
   "author": "",
@@ -15,6 +17,7 @@
     "@anthropic-ai/sdk": "^1.3.0",
     "@remotion/bundler": "^4.0.539",
     "@remotion/cli": "^4.0.539",
+    "@remotion/player": "^4.0.539",
     "@remotion/renderer": "^4.0.539",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -25,8 +28,10 @@
   "devDependencies": {
     "@types/node": "^26.6.6",
     "@types/react": "^18.3.31",
+    "@types/react-dom": "^18.3.7",
     "tsx": "^4.23.15",
-    "typescript": "^7.0.2"
+    "typescript": "^7.0.2",
+    "vite": "^8.3.5"
   },
   "type": "module"
 }

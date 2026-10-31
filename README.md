@@ -1,5 +1,23 @@
 # ia-de-estudos
 
+## O site (`web/`)
+
+Página inicial onde o aluno digita um tema, cola um texto ou envia um PDF, escolhe o objetivo (ENEM, vestibular, concurso, faculdade) e o tamanho da aula. Depois vem um feed vertical, como nos apps de vídeo:
+
+- reels animados tocando ao vivo, com voz do navegador e legenda que acompanha a palavra falada;
+- toque para pausar, dois toques para curtir, botões de "não entendi", salvar para revisar, som e velocidade;
+- depois de cada reel, uma pergunta que se responde com um toque, com XP, sequência de acertos e confete;
+- tela final com porcentagem de acerto e os conceitos para revisar.
+
+```bash
+npm run site         # abre em http://localhost:5173
+npm run site:build   # gera a versão estática em dist-web/
+```
+
+Por enquanto o site é uma demonstração: toda aula usa o conteúdo de exemplo (Revolução Francesa). O próximo passo é ligar o site ao gerador abaixo por meio de um servidor.
+
+## O gerador de vídeos (`src/`)
+
 Protótipo da Fase 0: transforma uma matéria (PDF, texto ou só um tema) em reels verticais animados, com voz, legenda palavra por palavra e uma pergunta rápida no final.
 
 ## Como funciona
