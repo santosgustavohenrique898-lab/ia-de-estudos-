@@ -170,19 +170,28 @@ O material de referência é ${fotos}: caderno, apostila, livro ou lousa do alun
   return `${estilo(pedido.objetivo, base)}\n\n${fonte}`;
 }
 
+// Quantos reels o primeiro pedido escreve. Os demais são pedidos em paralelo assim que o plano chega,
+// para a aula inteira ficar pronta em cerca de metade do tempo.
+export const reelsDoPrimeiroPedido = (n: number) => (n <= 2 ? n : Math.ceil(n / 2));
+
 function pedidoDaAula(aula: AulaPreparada) {
   const n = aula.pedido.reels;
+  const k = reelsDoPrimeiroPedido(n);
   const tarefa = aula.material || aula.imagens
     ? `Tarefa: transforme o material do aluno numa aula em reels com até ${n} conceitos (menos, se o material for curto), na ordem certa para aprender: do mais básico ao mais avançado. Ensine o que está no material.`
     : `Tarefa: monte uma aula em reels com exatamente ${n} conceitos sobre esse assunto, na ordem certa para aprender: do mais básico ao mais avançado. Se o pedido for amplo ou vago, escolha o recorte que mais cai em prova para esse público.`;
+  const quais =
+    k < n
+      ? `2. Depois, um reel por linha, SÓ para os ${k} primeiros conceitos do plano, na ordem (os outros reels são escritos à parte): {"tipo":"reel","conceito":"...","cenas":[...],"quiz":{...}}`
+      : `2. Depois, um reel por linha, na ordem do plano: {"tipo":"reel","conceito":"...","cenas":[...],"quiz":{...}}`;
   return `${contexto(aula)}
 
 ${tarefa}
 Cada reel ensina um conceito diferente, sem repetir o que outro reel já explicou.
 
 Responda nesta ordem:
-1. Primeira linha, o plano: {"tipo":"plano","titulo":"título curto da aula","conceitos":["conceito 1","conceito 2"]}
-2. Depois, um reel por linha, na ordem do plano: {"tipo":"reel","conceito":"...","cenas":[...],"quiz":{...}}
+1. Primeira linha, o plano, já com todos os conceitos da aula: {"tipo":"plano","titulo":"título curto da aula","conceitos":["conceito 1","conceito 2"]}
+${quais}
 Se não houver o que ensinar (texto sem sentido, foto ilegível ou sem conteúdo de estudo), responda só: {"tipo":"erro","mensagem":"explicação curta para o aluno"}
 
 ${FORMATO}`;
@@ -195,6 +204,7 @@ A aula "${plano.titulo}" já tem este plano:
 ${plano.conceitos.map((c, i) => `${i + 1}. ${c}`).join("\n")}
 
 Tarefa: escreva os reels destes conceitos, um por linha, nesta ordem: ${posicoes.map((i) => `"${plano.conceitos[i]}"`).join(", ")}.
+Os outros conceitos do plano têm reels próprios: não repita o que eles explicam.
 Cada linha: {"tipo":"reel","conceito":"...","cenas":[...],"quiz":{...}}
 
 ${FORMATO}`;
@@ -417,12 +427,17 @@ async function gerar(aula: AulaPreparada, emitir: (e: EventoServidor) => void, s
   };
 
   // Coloca o reel na posição do conceito com o mesmo nome; se não achar, na próxima vaga pedida.
+  // Um reel com o nome exato de um conceito que não foi pedido nesta resposta é descartado
+  // (a outra resposta, que corre em paralelo, cuida dele).
   const posicaoDo = (conceito: string, pedidas: number[]) => {
     const livres = pedidas.filter((i) => !prontos[i]);
     const alvo = simplificar(conceito);
+    const nomes = plano!.conceitos.map(simplificar);
+    const exato = nomes.findIndex((c) => c === alvo);
+    if (exato >= 0) return livres.includes(exato) ? exato : -1;
     const porNome = livres.find((i) => {
-      const c = simplificar(plano!.conceitos[i]);
-      return c === alvo || (alvo.length > 3 && c.length > 3 && (c.includes(alvo) || alvo.includes(c)));
+      const c = nomes[i];
+      return alvo.length > 3 && c.length > 3 && (c.includes(alvo) || alvo.includes(c));
     });
     return porNome ?? livres[0] ?? -1;
   };
@@ -459,12 +474,44 @@ async function gerar(aula: AulaPreparada, emitir: (e: EventoServidor) => void, s
     if (Array.isArray(o.reels)) for (const r of o.reels) receberReel(r, pedidas);
   };
 
-  // 1. Um pedido só: o plano chega primeiro e cada reel aparece no feed assim que termina de ser escrito.
+  // 1. O primeiro pedido traz o plano e a primeira metade dos reels; assim que o plano chega, a outra
+  //    metade é pedida em paralelo. Cada reel aparece no feed assim que termina de ser escrito.
   emitir({ tipo: "etapa", etapa: aula.material || aula.imagens ? "lendo" : "pesquisando" });
   const fotos = aula.imagens ? { images: aula.imagens } : {};
+  const k = reelsDoPrimeiroPedido(n);
   let comecou = false;
-  const todas = () => intervalo(plano ? plano.conceitos.length : n);
-  const ler = leitorDeObjetos((o) => receber(o, todas));
+  // Antes do plano chegar, qualquer posição serve; depois, o primeiro pedido só preenche as k primeiras.
+  const doPrimeiro = () => (plano ? intervalo(Math.min(k, plano.conceitos.length)) : intervalo(n));
+  let erroParalelo: ErroSample | null = null;
+  let paralelo: Promise<void> = Promise.resolve();
+  const pedirSegundaMetade = (p: Plano) => {
+    const pedidas = intervalo(p.conceitos.length).slice(k);
+    if (pedidas.length === 0) return;
+    const lerParalelo = leitorDeObjetos((o) => {
+      if (ehObjeto(o) && Array.isArray(o.cenas)) receberReel(o, () => pedidas);
+    });
+    let chegou = false;
+    paralelo = sample(pedidoDeReels(aula, p, pedidas), {
+      ...fotos,
+      signal,
+      onText: ({ delta }) => {
+        chegou = true;
+        lerParalelo(delta);
+      },
+    })
+      .then(({ text }) => {
+        if (!chegou) lerParalelo(text);
+      })
+      .catch((e: unknown) => {
+        erroParalelo = e as ErroSample;
+      });
+  };
+  const ler = leitorDeObjetos((o) => {
+    const tinhaPlano = Boolean(plano);
+    receber(o, doPrimeiro);
+    // O plano de verdade acabou de chegar (não o improvisado a partir de um reel): pede o resto em paralelo.
+    if (!tinhaPlano && plano && ehObjeto(o) && !Array.isArray(o.cenas)) pedirSegundaMetade(plano);
+  });
   let erro: ErroSample | null = null;
   try {
     const { text } = await sample(pedidoDaAula(aula), {
@@ -482,6 +529,7 @@ async function gerar(aula: AulaPreparada, emitir: (e: EventoServidor) => void, s
   } catch (e) {
     erro = e as ErroSample;
   }
+  await paralelo;
   if (signal.aborted) return;
   if (erro?.code === "refused") throw erro;
   if (recusa) throw new ErroDaAula(recusa);
@@ -490,10 +538,11 @@ async function gerar(aula: AulaPreparada, emitir: (e: EventoServidor) => void, s
     if (erro) throw erro;
     throw new ErroDaAula("Não consegui montar a aula desta vez. Tente de novo.");
   }
+  const bloqueio = [erro, erroParalelo as ErroSample | null].find((e) => e?.code && SEM_CONTINUACAO.has(e.code) && e.code !== "queue_overflow");
 
   // 2. Se a resposta foi cortada ou algum reel veio com defeito, pede só os que faltaram, uma vez.
   let faltando = intervalo(planoFinal.conceitos.length).filter((i) => !prontos[i]);
-  if (faltando.length > 0 && !(erro?.code && SEM_CONTINUACAO.has(erro.code))) {
+  if (faltando.length > 0 && !bloqueio) {
     const pedidas = faltando;
     const lerResto = leitorDeObjetos((o) => receber(o, () => pedidas));
     let chegou = false;

@@ -8,6 +8,8 @@ import { QuizAoVivo } from "./QuizAoVivo";
 import { Pergunta } from "./Pergunta";
 import { Fundo3D, Nucleo } from "./Efeitos3D";
 import {
+  chaveDoReel,
+  curtirReel,
   desmarcarRevisao,
   marcarParaRevisar,
   registrarErro,
@@ -88,7 +90,6 @@ export const Feed = ({
   const [ativo, setAtivo] = useState(0);
   const [mudo, setMudo] = useState(false);
   const [velocidade, setVelocidade] = useState(1);
-  const [curtidos, setCurtidos] = useState<Set<number>>(new Set());
   const [salvos, setSalvos] = useState<Set<number>>(new Set());
   const [xpVoando, setXpVoando] = useState<number | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
@@ -121,6 +122,9 @@ export const Feed = ({
     else novo.add(i);
     return novo;
   };
+
+  const marcarVisto = (conceito: string) =>
+    setDesempenho((d) => (d.vistos.includes(conceito) ? d : { ...d, vistos: [...d.vistos, conceito] }));
 
   const mostrarAviso = (texto: string) => {
     setAviso(texto);
@@ -157,6 +161,7 @@ export const Feed = ({
       sequencia,
       melhorSequencia: Math.max(d.melhorSequencia, sequencia),
       revisar: acertou || d.revisar.includes(conceito) ? d.revisar : [...d.revisar, conceito],
+      vistos: d.vistos,
     }));
     const dia = registrarResposta(acertou, ganho);
     if (dia.bateuMeta) mostrarAviso(textoDaMeta(dia.ofensiva));
@@ -200,11 +205,11 @@ export const Feed = ({
                   ativo={ativo === k}
                   mudo={mudo}
                   velocidade={velocidade}
-                  curtido={curtidos.has(item.i)}
+                  curtido={progresso.curtidas.includes(chaveDoReel(aula.id, item.i))}
                   salvo={salvos.has(item.i)}
                   objetivo={aula.objetivo}
                   podeExplicar={MODO_ARTEFATO}
-                  aoCurtir={(forcar) => setCurtidos((c) => (forcar && c.has(item.i) ? c : alternar(c, item.i)))}
+                  aoCurtir={(so) => curtirReel(chaveDoReel(aula.id, item.i), so)}
                   aoSalvar={() => {
                     if (salvos.has(item.i)) desmarcarRevisao(`${aula.id}-r${item.i}`);
                     else marcarParaRevisar(cartaoDoReel(item.i, item.pronto));
@@ -216,7 +221,10 @@ export const Feed = ({
                   }}
                   aoMudo={() => setMudo((m) => !m)}
                   aoVelocidade={() => setVelocidade((v) => VELOCIDADES[(VELOCIDADES.indexOf(v) + 1) % VELOCIDADES.length])}
-                  aoTerminar={() => setTimeout(() => irPara(k + 1), 900)}
+                  aoTerminar={() => {
+                    marcarVisto(item.pronto.reel.conceito);
+                    setTimeout(() => irPara(k + 1), 900);
+                  }}
                 />
               )}
               {item.tipo === "quiz" && (
@@ -230,6 +238,7 @@ export const Feed = ({
                   sequencia={desempenho.sequencia}
                   aoResponder={(acertou) => {
                     contar(acertou, item.pronto.reel.conceito);
+                    marcarVisto(item.pronto.reel.conceito);
                     if (!acertou) registrarErro(cartaoDoReel(item.i, item.pronto));
                   }}
                   aoContinuar={() => irPara(k + 1)}

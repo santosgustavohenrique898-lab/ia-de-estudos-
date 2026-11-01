@@ -29,6 +29,9 @@ export const Resumo = ({
   const conceitos = construcao.reels
     .filter((r): r is ReelPronto => Boolean(r) && r !== "descartado")
     .map((r) => ({ nome: r.reel.conceito, frase: lembreteDoReel(r) ?? "" }));
+  // Só entra em "O que você aprendeu" o reel que o aluno assistiu até o fim ou cuja pergunta respondeu.
+  const aprendidos = conceitos.filter((c) => desempenho.vistos.includes(c.nome));
+  const faltaram = conceitos.filter((c) => !desempenho.vistos.includes(c.nome));
 
   const baixar = async () => {
     setBaixando(true);
@@ -37,7 +40,7 @@ export const Resumo = ({
       const imagem = await imagemDoResumo({
         titulo: construcao.titulo || "Minha aula",
         objetivo: aula.objetivo,
-        conceitos,
+        conceitos: aprendidos,
         acertos: desempenho.acertos,
         respondidas: desempenho.respondidas,
         xp: desempenho.xp,
@@ -118,13 +121,25 @@ export const Resumo = ({
           </div>
         )}
 
-        {conceitos.length > 0 && (
+        {aprendidos.length > 0 && (
           <div className="aprendi">
             <div className="rotulo">O que você aprendeu</div>
-            {conceitos.map((c, i) => (
+            {aprendidos.map((c, i) => (
               <div key={i} className="aprendi-item">
                 <b>{c.nome}</b>
                 {c.frase && <span>{c.frase}</span>}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {faltaram.length > 0 && (
+          <div className="aprendi faltou">
+            <div className="rotulo">Você ainda não viu</div>
+            {faltaram.map((c, i) => (
+              <div key={i} className="aprendi-item">
+                <b>{c.nome}</b>
+                <span>Abra esta aula de novo em "Suas aulas" para assistir.</span>
               </div>
             ))}
           </div>
