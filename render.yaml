@@ -1,0 +1,21 @@
+# Publicação no Render (https://render.com): New > Blueprint > escolha este repositório.
+# O Render lê este arquivo, pede as três chaves marcadas com sync: false e coloca o site no ar.
+services:
+  - type: web
+    name: learningflix
+    runtime: node
+    plan: free
+    buildCommand: npm install --include=dev && npx vite build
+    startCommand: npx tsx servidor/index.ts
+    healthCheckPath: /api/status
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: ELEVENLABS_API_KEY
+        sync: false
+      - key: ELEVENLABS_VOICE_ID
+        sync: false
+      - key: CLAUDE_MODEL
+        value: claude-opus-5-5
+      - key: AULAS_POR_HORA
+        value: "10"

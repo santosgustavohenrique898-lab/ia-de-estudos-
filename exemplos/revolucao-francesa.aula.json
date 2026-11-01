@@ -1,0 +1,119 @@
+{
+  "titulo": "Revolução Francesa em 3 reels",
+  "reels": [
+    {
+      "conceito": "Por que a Revolução começou",
+      "cenas": [
+        {
+          "template": "gancho",
+          "fala": "Em 1789 o pão chegou a custar quase o salário inteiro de um trabalhador em Paris. E foi aí que a França explodiu.",
+          "titulo": "O pão que derrubou um rei",
+          "subtitulo": "França, 1789"
+        },
+        {
+          "template": "lista",
+          "fala": "Foram três motivos juntos. O Estado estava quebrado por dívidas de guerra. As colheitas ruins fizeram o preço do pão disparar. E as ideias do Iluminismo diziam que ninguém nasce com privilégio.",
+          "titulo": "Três causas ao mesmo tempo",
+          "itens": ["Governo endividado", "Fome e pão caro", "Ideias iluministas"]
+        },
+        {
+          "template": "comparacao",
+          "fala": "A sociedade era dividida em estados. Clero e nobreza tinham privilégios e quase não pagavam impostos. O terceiro estado, a imensa maioria, pagava a conta.",
+          "titulo": "Quem pagava a conta?",
+          "esquerda": { "nome": "Terceiro estado", "pontos": ["Burguesia e povo", "Maioria da população", "Pagava os impostos"] },
+          "direita": { "nome": "Clero e nobreza", "pontos": ["Minoria", "Cheios de privilégios", "Quase isentos"] }
+        },
+        {
+          "template": "fixacao",
+          "fala": "Então guarda isso: crise econômica, mais desigualdade, mais ideias novas. Essa mistura derrubou o Antigo Regime.",
+          "frase": "Crise econômica + privilégios + Iluminismo = fim do Antigo Regime"
+        }
+      ],
+      "quiz": {
+        "pergunta": "Qual grupo sustentava quase toda a carga de impostos na França antes de 1789?",
+        "alternativas": ["O clero", "A nobreza", "O terceiro estado", "A família real"],
+        "correta": 2,
+        "explicacao": "Clero e nobreza tinham privilégios fiscais; o terceiro estado pagava a maior parte dos impostos."
+      }
+    },
+    {
+      "conceito": "1789: o ano que mudou tudo",
+      "cenas": [
+        {
+          "template": "gancho",
+          "fala": "Em só quatro meses, a França passou de monarquia absoluta para um país com direitos escritos no papel.",
+          "titulo": "4 meses que mudaram o mundo",
+          "subtitulo": "maio a agosto de 1789"
+        },
+        {
+          "template": "linha_do_tempo",
+          "fala": "Em maio, o rei convoca os Estados Gerais. Em junho, o terceiro estado jura não sair até ter uma Constituição. Em julho, o povo toma a Bastilha. E em agosto sai a Declaração dos Direitos do Homem e do Cidadão.",
+          "titulo": "A sequência de 1789",
+          "eventos": [
+            { "data": "Maio", "texto": "Estados Gerais convocados" },
+            { "data": "20 de junho", "texto": "Juramento do Jogo da Péla" },
+            { "data": "14 de julho", "texto": "Queda da Bastilha" },
+            { "data": "26 de agosto", "texto": "Declaração dos Direitos" }
+          ]
+        },
+        {
+          "template": "lista",
+          "fala": "E o que a Declaração dizia? Que todos são iguais perante a lei, que existe liberdade, que a propriedade é um direito, e que o poder vem da nação, não do rei.",
+          "titulo": "O que a Declaração garantiu",
+          "itens": ["Igualdade perante a lei", "Liberdade", "Direito à propriedade", "Poder vem da nação"]
+        },
+        {
+          "template": "fixacao",
+          "fala": "Na prova, lembra: catorze de julho é a Bastilha, o símbolo da revolução. E a Declaração é a base dos direitos que a gente tem hoje.",
+          "frase": "14 de julho: Bastilha. Agosto: Declaração dos Direitos do Homem."
+        }
+      ],
+      "quiz": {
+        "pergunta": "Qual acontecimento de 14 de julho de 1789 virou símbolo da Revolução?",
+        "alternativas": ["A execução de Luís XVI", "A queda da Bastilha", "A coroação de Napoleão", "A convocação dos Estados Gerais"],
+        "correta": 1,
+        "explicacao": "A tomada da Bastilha, prisão símbolo do poder do rei, é a data nacional da França até hoje."
+      }
+    },
+    {
+      "conceito": "Girondinos, jacobinos e o Terror",
+      "cenas": [
+        {
+          "template": "gancho",
+          "fala": "Sabe por que a gente fala em esquerda e direita na política? A culpa é da Revolução Francesa.",
+          "titulo": "De onde vem esquerda e direita?",
+          "subtitulo": ""
+        },
+        {
+          "template": "comparacao",
+          "fala": "Na assembleia, os girondinos, da alta burguesia e mais moderados, sentavam à direita. Os jacobinos, mais radicais e apoiados pelo povo de Paris, sentavam à esquerda.",
+          "titulo": "Dois lados da assembleia",
+          "esquerda": { "nome": "Jacobinos", "pontos": ["Radicais", "Apoio popular", "Sentavam à esquerda"] },
+          "direita": { "nome": "Girondinos", "pontos": ["Moderados", "Alta burguesia", "Sentavam à direita"] }
+        },
+        {
+          "template": "linha_do_tempo",
+          "fala": "Em 1792 nasce a República. Em 1793 o rei Luís dezesseis é guilhotinado. Com os jacobinos no poder vem o Terror, com milhares de execuções. E em 1794 o próprio Robespierre acaba na guilhotina.",
+          "titulo": "Da República ao Terror",
+          "eventos": [
+            { "data": "1792", "texto": "República proclamada" },
+            { "data": "1793", "texto": "Luís XVI guilhotinado" },
+            { "data": "1793–1794", "texto": "Período do Terror" },
+            { "data": "1794", "texto": "Robespierre guilhotinado" }
+          ]
+        },
+        {
+          "template": "fixacao",
+          "fala": "Resumindo: jacobinos radicais à esquerda, girondinos moderados à direita. E o Terror foi a fase mais violenta, comandada por Robespierre.",
+          "frase": "Jacobinos à esquerda, girondinos à direita. Terror = Robespierre."
+        }
+      ],
+      "quiz": {
+        "pergunta": "Quem liderou o período do Terror na Revolução Francesa?",
+        "alternativas": ["Napoleão Bonaparte", "Luís XVI", "Robespierre", "Maria Antonieta"],
+        "correta": 2,
+        "explicacao": "Robespierre, líder jacobino, comandou o Terror até ser guilhotinado em 1794."
+      }
+    }
+  ]
+}

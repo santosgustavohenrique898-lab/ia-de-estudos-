@@ -1,0 +1,52 @@
+{
+  "titulo": "Fotossíntese em 3 reels",
+  "reels": [
+    {
+      "conceito": "O que é fotossíntese",
+      "cenas": [
+        { "template": "gancho", "fala": "Uma árvore enorme pesa toneladas. Sabe de onde veio quase toda essa madeira? Do ar.", "titulo": "A árvore que nasceu do ar", "subtitulo": "parece mentira, mas não é" },
+        { "template": "definicao", "fala": "Fotossíntese é o processo em que a planta usa a energia da luz para transformar gás carbônico e água em glicose, que é o alimento dela, e ainda solta oxigênio.", "termo": "Fotossíntese", "definicao": "A planta usa luz para transformar gás carbônico e água em glicose e oxigênio." },
+        { "template": "lista", "fala": "Para isso acontecer, ela precisa de quatro coisas: luz, água que vem pela raiz, gás carbônico que entra pelas folhas, e clorofila, o pigmento verde que captura a luz.", "titulo": "Os ingredientes", "itens": ["Luz", "Água", "Gás carbônico", "Clorofila"] },
+        { "template": "exemplo", "fala": "Pensa assim: o gás carbônico do ar vira o carbono do açúcar, e esse açúcar vira tronco, folha e fruto. É por isso que a madeira vem, em grande parte, do ar.", "titulo": "Imagina assim", "situacao": "O carbono do ar vira açúcar, e o açúcar vira tronco, folha e fruto." },
+        { "template": "fixacao", "fala": "Então leva isso pra prova: luz, mais água, mais gás carbônico, viram glicose e oxigênio.", "frase": "Luz + água + CO₂ → glicose + oxigênio" }
+      ],
+      "quiz": {
+        "pergunta": "Qual gás a planta retira do ar para fazer a fotossíntese?",
+        "alternativas": ["Oxigênio", "Gás carbônico", "Nitrogênio", "Hidrogênio"],
+        "correta": 1,
+        "explicacao": "A planta absorve gás carbônico (CO₂) e libera oxigênio."
+      }
+    },
+    {
+      "conceito": "Onde a fotossíntese acontece",
+      "cenas": [
+        { "template": "gancho", "fala": "Por que as folhas são verdes, e não pretas, se o objetivo é absorver luz?", "titulo": "Por que as folhas são verdes?", "subtitulo": "" },
+        { "template": "definicao", "fala": "A fotossíntese acontece dentro do cloroplasto, uma organela das células da folha que é cheia de clorofila.", "termo": "Cloroplasto", "definicao": "Organela da célula vegetal onde acontece a fotossíntese, cheia de clorofila." },
+        { "template": "comparacao", "fala": "A clorofila absorve muito bem a luz azul e a vermelha. Já a luz verde ela absorve pouco e reflete. E é essa luz refletida que chega no seu olho.", "titulo": "O que a clorofila faz com a luz", "esquerda": { "nome": "Absorve", "pontos": ["Luz azul", "Luz vermelha"] }, "direita": { "nome": "Reflete", "pontos": ["Luz verde", "Por isso vemos verde"] } },
+        { "template": "exemplo", "fala": "É igual a uma camiseta verde: ela parece verde porque devolve a luz verde para os seus olhos.", "titulo": "Na prática", "situacao": "Uma camiseta verde parece verde porque reflete a luz verde para os seus olhos." },
+        { "template": "fixacao", "fala": "Resumo: fotossíntese acontece no cloroplasto, e a folha é verde porque a clorofila reflete o verde.", "frase": "Cloroplasto é a fábrica. Folha verde = clorofila refletindo o verde." }
+      ],
+      "quiz": {
+        "pergunta": "Em qual parte da célula vegetal acontece a fotossíntese?",
+        "alternativas": ["Mitocôndria", "Núcleo", "Cloroplasto", "Ribossomo"],
+        "correta": 2,
+        "explicacao": "O cloroplasto contém a clorofila e é onde acontece a fotossíntese."
+      }
+    },
+    {
+      "conceito": "Fase clara e fase escura",
+      "cenas": [
+        { "template": "gancho", "fala": "O oxigênio que a planta solta não vem do gás carbônico. Ele vem da água. Pegadinha clássica de prova.", "titulo": "O oxigênio vem da água", "subtitulo": "pegadinha clássica de prova" },
+        { "template": "comparacao", "fala": "A fotossíntese tem duas etapas. Na fase clara, a luz quebra a água, solta oxigênio e gera energia química. Na fase escura, o ciclo de Calvin usa essa energia para fixar o gás carbônico e montar a glicose.", "titulo": "Duas fases, duas funções", "esquerda": { "nome": "Fase clara", "pontos": ["Precisa de luz", "Quebra a água", "Libera oxigênio"] }, "direita": { "nome": "Fase escura", "pontos": ["Ciclo de Calvin", "Fixa o CO₂", "Produz glicose"] } },
+        { "template": "exemplo", "fala": "Pensa numa fábrica: a fase clara carrega as baterias com a energia da luz, e a fase escura usa essas baterias para montar o açúcar.", "titulo": "Imagina uma fábrica", "situacao": "A fase clara carrega as baterias; a fase escura usa a carga para montar o açúcar." },
+        { "template": "fixacao", "fala": "Na prova: fase clara depende da luz e libera o oxigênio da água. Fase escura fixa o gás carbônico e produz glicose.", "frase": "Clara: luz e oxigênio da água. Escura: CO₂ vira glicose." }
+      ],
+      "quiz": {
+        "pergunta": "De onde vem o oxigênio liberado na fotossíntese?",
+        "alternativas": ["Do gás carbônico", "Da glicose", "Da quebra da água", "Do solo"],
+        "correta": 2,
+        "explicacao": "Na fase clara, a luz quebra a molécula de água (fotólise) e o oxigênio é liberado."
+      }
+    }
+  ]
+}
