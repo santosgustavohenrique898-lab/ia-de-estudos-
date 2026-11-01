@@ -1,5 +1,6 @@
 // Resumo da aula em imagem (PNG vertical), para salvar e mandar no grupo de estudos.
 // Desenhado num canvas, sem depender de nenhum serviço de fora.
+import LOGO from "./marca/logo-learningflix.webp";
 
 export type DadosDoResumo = {
   titulo: string;
@@ -40,15 +41,52 @@ function retangulo(ctx: CanvasRenderingContext2D, x: number, y: number, l: numbe
   ctx.closePath();
 }
 
+// A logo oficial com os cantos arredondados, como o ícone de um app.
+function desenharLogo(ctx: CanvasRenderingContext2D, logo: CanvasImageSource, x: number, y: number, lado: number, aro?: string) {
+  ctx.save();
+  retangulo(ctx, x, y, lado, lado, lado * 0.23);
+  ctx.clip();
+  ctx.drawImage(logo, x, y, lado, lado);
+  ctx.restore();
+  if (aro) {
+    ctx.save();
+    ctx.strokeStyle = aro;
+    ctx.lineWidth = 3;
+    retangulo(ctx, x, y, lado, lado, lado * 0.23);
+    ctx.stroke();
+    ctx.restore();
+  }
+}
+
+function carregarImagem(src: string, limite = 4000): Promise<HTMLImageElement | null> {
+  return new Promise((ok) => {
+    const img = new Image();
+    const espera = setTimeout(() => ok(null), limite);
+    img.onload = () => {
+      clearTimeout(espera);
+      ok(img);
+    };
+    img.onerror = () => {
+      clearTimeout(espera);
+      ok(null);
+    };
+    img.src = src;
+  });
+}
+
 // Mede (desenhar = false) ou desenha (desenhar = true) o resumo; devolve a altura total.
-function compor(ctx: CanvasRenderingContext2D, d: DadosDoResumo, desenhar: boolean): number {
+// Sem a logo (se ela não carregar), o nome aparece sozinho no mesmo lugar.
+function compor(ctx: CanvasRenderingContext2D, d: DadosDoResumo, desenhar: boolean, logo: CanvasImageSource | null): number {
   const util = LARGURA - MARGEM * 2;
   let y = 0;
 
-  // Cabeçalho com o degradê da marca.
+  // Cabeçalho com o degradê da marca: logo e nome, o objetivo e o título da aula.
+  const LADO_LOGO = 76;
   ctx.font = `900 72px ${FONTE}`;
   const titulo = quebrar(ctx, d.titulo, util);
-  const alturaTopo = MARGEM + 48 + 28 + 44 + titulo.length * 84 + MARGEM - 12;
+  const yRotulo = MARGEM + LADO_LOGO + 30;
+  const yTitulo = yRotulo + 48;
+  const alturaTopo = yTitulo + titulo.length * 84 + MARGEM - 12;
   if (desenhar) {
     const grad = ctx.createLinearGradient(0, 0, LARGURA, alturaTopo);
     grad.addColorStop(0, "#6c4cf5");
@@ -56,16 +94,18 @@ function compor(ctx: CanvasRenderingContext2D, d: DadosDoResumo, desenhar: boole
     grad.addColorStop(1, "#22b3c9");
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, LARGURA, alturaTopo);
+    if (logo) desenharLogo(ctx, logo, MARGEM, MARGEM, LADO_LOGO, "rgba(255, 255, 255, 0.35)");
     ctx.fillStyle = "#ffffff";
+    ctx.font = `800 42px ${FONTE}`;
+    ctx.textBaseline = "middle";
+    ctx.fillText("LearningFlix", logo ? MARGEM + LADO_LOGO + 24 : MARGEM, MARGEM + LADO_LOGO / 2);
     ctx.textBaseline = "top";
-    ctx.font = `800 40px ${FONTE}`;
-    ctx.fillText("▶  LearningFlix", MARGEM, MARGEM);
     ctx.globalAlpha = 0.82;
     ctx.font = `800 28px ${FONTE}`;
-    ctx.fillText(`RESUMO DA AULA  ·  ${d.objetivo.toUpperCase()}`, MARGEM, MARGEM + 76);
+    ctx.fillText(`RESUMO DA AULA  ·  ${d.objetivo.toUpperCase()}`, MARGEM, yRotulo);
     ctx.globalAlpha = 1;
     ctx.font = `900 72px ${FONTE}`;
-    titulo.forEach((linha, i) => ctx.fillText(linha, MARGEM, MARGEM + 124 + i * 84));
+    titulo.forEach((linha, i) => ctx.fillText(linha, MARGEM, yTitulo + i * 84));
   }
   y = alturaTopo + 48;
 
@@ -152,32 +192,44 @@ function compor(ctx: CanvasRenderingContext2D, d: DadosDoResumo, desenhar: boole
     y += altura + 24;
   });
 
+  // Assinatura: a logo com o nome e a promessa, para quem recebe o resumo no grupo.
   y += 40;
+  const LADO_RODAPE = 60;
   if (desenhar) {
+    ctx.font = `800 36px ${FONTE}`;
+    const nome = "LearningFlix";
+    const larguraNome = ctx.measureText(nome).width;
+    const larguraLinha = (logo ? LADO_RODAPE + 18 : 0) + larguraNome;
+    const x = (LARGURA - larguraLinha) / 2;
+    if (logo) desenharLogo(ctx, logo, x, y, LADO_RODAPE);
+    ctx.fillStyle = TEXTO;
+    ctx.textBaseline = "middle";
+    ctx.fillText(nome, logo ? x + LADO_RODAPE + 18 : x, y + LADO_RODAPE / 2);
+    ctx.textBaseline = "top";
     ctx.textAlign = "center";
     ctx.fillStyle = "rgba(15, 18, 34, 0.5)";
     ctx.font = `700 28px ${FONTE}`;
-    ctx.fillText("Feito com LearningFlix · aprenda qualquer matéria rolando reels", LARGURA / 2, y);
+    ctx.fillText("Aprenda qualquer matéria rolando reels", LARGURA / 2, y + LADO_RODAPE + 18);
     ctx.textAlign = "left";
   }
-  return y + 28 + MARGEM;
+  return y + LADO_RODAPE + 18 + 28 + MARGEM;
 }
 
 export async function imagemDoResumo(d: DadosDoResumo): Promise<Blob> {
-  await document.fonts?.ready.catch(() => {});
+  const [logo] = await Promise.all([carregarImagem(LOGO), document.fonts?.ready.catch(() => {})]);
   const canvas = document.createElement("canvas");
   canvas.width = LARGURA;
   canvas.height = 100;
   const medida = canvas.getContext("2d")!;
   medida.textBaseline = "top";
-  const altura = Math.ceil(compor(medida, d, false));
+  const altura = Math.ceil(compor(medida, d, false, logo));
   canvas.width = LARGURA;
   canvas.height = altura;
   const ctx = canvas.getContext("2d")!;
   ctx.fillStyle = "#f6f7fc";
   ctx.fillRect(0, 0, LARGURA, altura);
   ctx.textBaseline = "top";
-  compor(ctx, d, true);
+  compor(ctx, d, true, logo);
   return new Promise((ok, falha) => canvas.toBlob((b) => (b ? ok(b) : falha(new Error("canvas vazio"))), "image/png"));
 }
 

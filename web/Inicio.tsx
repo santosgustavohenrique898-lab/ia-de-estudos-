@@ -18,6 +18,7 @@ import {
   trocarMeta,
   useProgresso,
 } from "./progresso";
+import LOGO from "./marca/logo-learningflix.webp";
 
 export type { Objetivo };
 export type Pedido = {
@@ -171,7 +172,7 @@ export const Inicio = ({
       <Fundo3D />
       <header className="topo">
         <div className="logo">
-          <span className="logo-icone">▶</span> LearningFlix
+          <img className="logo-icone" src={LOGO} alt="" width={40} height={40} /> LearningFlix
         </div>
         <nav className="topo-links">
           {temHistorico && ofensiva > 0 ? <span className="topo-fogo">🔥 {ofensiva}</span> : <a href="#como-funciona">Como funciona</a>}

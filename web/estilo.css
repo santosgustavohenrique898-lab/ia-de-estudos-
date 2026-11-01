@@ -313,15 +313,12 @@ h2 {
 }
 
 .logo-icone {
-  width: 38px;
-  height: 38px;
-  border-radius: 12px;
-  background: var(--grad);
-  color: #fff;
-  display: grid;
-  place-items: center;
-  font-size: 14px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 6px 14px rgba(108, 76, 245, 0.4);
+  width: 40px;
+  height: 40px;
+  flex: none;
+  display: block;
+  border-radius: 11px;
+  box-shadow: 0 6px 14px rgba(44, 2, 159, 0.32);
 }
 
 .topo-links a {

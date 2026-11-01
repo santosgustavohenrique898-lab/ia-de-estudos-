@@ -12,6 +12,10 @@
 
 Sem chave da ElevenLabs, a voz é a do navegador (robótica). Sem chave do Claude, o site não gera aulas.
 
+## Logo
+
+A logo oficial é a imagem 3D original em `marca/LearningFlix-logo-oficial.png`. O site usa cópias reduzidas dela, sem mudar o desenho: `web/marca/logo-learningflix.webp` (cabeçalho e resumo em PNG) e os ícones em `web/public/` (aba do navegador e tela inicial do celular).
+
 ## Versão dentro do Claude (link do Artifact)
 
 O mesmo site também roda publicado como Artifact do Claude, sem servidor nenhum: quem abre o link gera a aula com o **próprio Claude** (a capacidade `sample` do Artifact), direto do navegador (`web/artefato.ts`).
