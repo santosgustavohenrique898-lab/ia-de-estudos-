@@ -37,6 +37,10 @@ O Artifact declara `{"sample": {"images": true}, "db": {}, "user": {}, "download
 
 Para gerar os arquivos dessa versão: `npm run site:artefato` (sai em `dist-artefato/`).
 
+## Teste automático
+
+`npm run teste` compila a versão do Artifact e percorre o fluxo inteiro num navegador, com o Claude simulado (não gasta nada): gera uma aula de 6 reels, confere que a segunda metade é pedida em paralelo e que cada reel fica na posição certa, curte um reel, responde, pula o resto e confere o resultado e "Suas aulas". Na primeira vez, rode `npx playwright install chromium`.
+
 ## Rodar no seu computador
 
 Precisa de Node 20 ou mais novo.
