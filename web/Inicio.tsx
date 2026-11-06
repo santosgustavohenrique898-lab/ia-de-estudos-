@@ -8,6 +8,7 @@ import type { LimitesDeFoto } from "./artefato";
 import { Fundo3D, useParallax } from "./Efeitos3D";
 import {
   apagarAula,
+  aulaCurtida,
   diaDe,
   ofensivaAtual,
   pendentes,
@@ -166,6 +167,8 @@ export const Inicio = ({
   const ofensiva = ofensivaAtual(progresso.perfil);
   const paraRevisar = pendentes(progresso).length;
   const proxima = proximaRevisao(progresso);
+  // Aulas com algum reel curtido sobem para o topo, mantendo a ordem de data entre elas.
+  const aulas = [...progresso.aulas].sort((a, b) => Number(aulaCurtida(progresso, b.id)) - Number(aulaCurtida(progresso, a.id)));
 
   return (
     <div className="inicio">
@@ -374,12 +377,19 @@ export const Inicio = ({
           {carregado && progresso.aulas.length > 0 && (
             <section className="suas-aulas">
               <div className="rotulo">Suas aulas · assista de novo sem esperar</div>
-              {progresso.aulas.slice(0, verTodas ? progresso.aulas.length : 4).map((a) => (
+              {aulas.slice(0, verTodas ? aulas.length : 4).map((a) => (
                 <div key={a.id} className="aula-salva">
                   <button className="aula-salva-abrir" onClick={() => aoAbrirAula(a.id)}>
                     <span className="aula-salva-play">▶</span>
                     <span className="aula-salva-texto">
-                      <strong>{a.titulo}</strong>
+                      <strong>
+                        {aulaCurtida(progresso, a.id) && (
+                          <span className="aula-curtida" aria-label="Aula curtida">
+                            ♥
+                          </span>
+                        )}
+                        {a.titulo}
+                      </strong>
                       <small>
                         {a.reels} reels{a.questoes ? ` · simulado de ${a.questoes}` : ""} · {a.objetivo} · {quandoFoi(a.criadaEm)}
                       </small>

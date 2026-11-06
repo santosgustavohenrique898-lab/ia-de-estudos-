@@ -18,6 +18,8 @@ export type Desempenho = {
   sequencia: number;
   melhorSequencia: number;
   revisar: string[];
+  // Conceitos dos reels que o aluno assistiu até o fim ou cuja pergunta respondeu.
+  vistos: string[];
 };
 
 // A aula chega aos poucos: cada posição é um reel pronto, descartado na checagem ou ainda em produção (null).
@@ -37,7 +39,7 @@ export type Construcao = {
 // A aula aberta agora. O id liga a aula salva e os cartões de revisão que saem dela.
 export type AulaAtual = { id: string; objetivo: Objetivo; criadaEm: number; salva: boolean };
 
-const DESEMPENHO_INICIAL: Desempenho = { xp: 0, acertos: 0, respondidas: 0, sequencia: 0, melhorSequencia: 0, revisar: [] };
+const DESEMPENHO_INICIAL: Desempenho = { xp: 0, acertos: 0, respondidas: 0, sequencia: 0, melhorSequencia: 0, revisar: [], vistos: [] };
 const CONSTRUCAO_INICIAL: Construcao = {
   etapa: null,
   titulo: "",

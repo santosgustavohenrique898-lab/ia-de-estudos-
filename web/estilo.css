@@ -5,7 +5,7 @@
   --branco: #ffffff;
   --texto: #0f1222;
   --suave: rgba(15, 18, 34, 0.6);
-  --muito-suave: rgba(15, 18, 34, 0.38);
+  --muito-suave: rgba(15, 18, 34, 0.58);
   --borda: rgba(15, 18, 34, 0.08);
   --roxo: #6c4cf5;
   --azul: #2f7bea;
@@ -97,10 +97,10 @@ h2 {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 1px 0 #3c2bb0, 0 8px 20px rgba(108, 76, 245, 0.3);
 }
 .botao-principal:disabled {
-  opacity: 0.45;
   cursor: not-allowed;
   box-shadow: none;
-  background: #b9b3d6;
+  background: #ece9f7;
+  color: #5f5a7d;
 }
 
 .botao-secundario {
@@ -2031,4 +2031,16 @@ h2 {
   .chamada-seta {
     display: none;
   }
+}
+
+/* Aula com reel curtido: coração antes do título em "Suas aulas". */
+.aula-curtida {
+  color: var(--roxo);
+  margin-right: 6px;
+}
+
+/* "Você ainda não viu": conceitos da aula que o aluno pulou. */
+.aprendi.faltou .aprendi-item {
+  border-left-color: var(--borda);
+  opacity: 0.85;
 }
