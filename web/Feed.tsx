@@ -1,13 +1,15 @@
 import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import { destaque } from "../src/remotion/tema";
 import type { Objetivo } from "../src/pipeline/estilo";
-import type { AulaAtual, Construcao, Desempenho } from "./main";
+import type { AulaAtual, Construcao, Desempenho, RespostaDada } from "./main";
 import { MODO_ARTEFATO, type ReelPronto } from "./api";
 import { ReelAoVivo } from "./ReelAoVivo";
 import { QuizAoVivo } from "./QuizAoVivo";
 import { Pergunta } from "./Pergunta";
 import { Fundo3D, Nucleo } from "./Efeitos3D";
 import {
+  chaveDoReel,
+  curtirReel,
   desmarcarRevisao,
   marcarParaRevisar,
   registrarErro,
@@ -63,6 +65,25 @@ export const lembreteDoReel = (p: ReelPronto) => {
   return f?.template === "fixacao" ? f.frase : undefined;
 };
 
+// O cartão de revisão da pergunta de um reel (o mesmo id liga o erro, o "Revisar" e o "Não entendi").
+export const cartaoDoReel = (aula: AulaAtual, tituloDaAula: string, i: number, p: ReelPronto): NovoCartao => ({
+  id: `${aula.id}-r${i}`,
+  conceito: p.reel.conceito,
+  aulaId: aula.id,
+  aulaTitulo: tituloDaAula,
+  questao: { ...p.reel.quiz },
+  lembrete: lembreteDoReel(p),
+});
+
+// O cartão de revisão de uma questão do simulado.
+export const cartaoDaQuestao = (aula: AulaAtual, tituloDaAula: string, k: number, q: Questao): NovoCartao => ({
+  id: `${aula.id}-s${k}`,
+  conceito: q.conceito || tituloDaAula,
+  aulaId: aula.id,
+  aulaTitulo: tituloDaAula,
+  questao: q,
+});
+
 export const textoDaMeta = (ofensiva: number) =>
   ofensiva <= 1 ? "🎯 Meta do dia batida! Sua ofensiva começou: 🔥 1 dia" : `🎯 Meta do dia batida! 🔥 ${ofensiva} dias seguidos`;
 
@@ -88,7 +109,6 @@ export const Feed = ({
   const [ativo, setAtivo] = useState(0);
   const [mudo, setMudo] = useState(false);
   const [velocidade, setVelocidade] = useState(1);
-  const [curtidos, setCurtidos] = useState<Set<number>>(new Set());
   const [salvos, setSalvos] = useState<Set<number>>(new Set());
   const [xpVoando, setXpVoando] = useState<number | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
@@ -122,41 +142,33 @@ export const Feed = ({
     return novo;
   };
 
+  const marcarVisto = (conceito: string) =>
+    setDesempenho((d) => (d.vistos.includes(conceito) ? d : { ...d, vistos: [...d.vistos, conceito] }));
+
   const mostrarAviso = (texto: string) => {
     setAviso(texto);
     setTimeout(() => setAviso((a) => (a === texto ? null : a)), 3800);
   };
 
-  const cartaoDoReel = (i: number, p: ReelPronto): NovoCartao => ({
-    id: `${aula.id}-r${i}`,
-    conceito: p.reel.conceito,
-    aulaId: aula.id,
-    aulaTitulo: construcao.titulo,
-    questao: { ...p.reel.quiz },
-    lembrete: lembreteDoReel(p),
-  });
+  const cartaoDoReelDaAula = (i: number, p: ReelPronto) => cartaoDoReel(aula, construcao.titulo, i, p);
 
-  const cartaoDaQuestao = (k: number, q: Questao): NovoCartao => ({
-    id: `${aula.id}-s${k}`,
-    conceito: q.conceito || construcao.titulo,
-    aulaId: aula.id,
-    aulaTitulo: construcao.titulo,
-    questao: q,
-  });
-
-  // Cada resposta conta para a aula (XP com bônus de sequência) e para o dia (meta e ofensiva).
-  const contar = (acertou: boolean, conceito: string) => {
+  // Cada resposta conta para a aula (XP com bônus de sequência) e para o dia (meta e ofensiva),
+  // e fica guardada (o que marcou e o que era certo) para a correção no resultado.
+  const contar = (resposta: RespostaDada) => {
+    const { acertou, conceito } = resposta;
     const sequencia = acertou ? desempenho.sequencia + 1 : 0;
     const ganho = acertou ? 10 + 5 * (sequencia - 1) : 2;
     setXpVoando(ganho);
     setTimeout(() => setXpVoando(null), 1400);
     setDesempenho((d) => ({
+      ...d,
       xp: d.xp + ganho,
       acertos: d.acertos + (acertou ? 1 : 0),
       respondidas: d.respondidas + 1,
       sequencia,
       melhorSequencia: Math.max(d.melhorSequencia, sequencia),
       revisar: acertou || d.revisar.includes(conceito) ? d.revisar : [...d.revisar, conceito],
+      respostas: [...d.respostas.filter((r) => r.chave !== resposta.chave), resposta],
     }));
     const dia = registrarResposta(acertou, ganho);
     if (dia.bateuMeta) mostrarAviso(textoDaMeta(dia.ofensiva));
@@ -200,23 +212,26 @@ export const Feed = ({
                   ativo={ativo === k}
                   mudo={mudo}
                   velocidade={velocidade}
-                  curtido={curtidos.has(item.i)}
+                  curtido={progresso.curtidas.includes(chaveDoReel(aula.id, item.i))}
                   salvo={salvos.has(item.i)}
                   objetivo={aula.objetivo}
                   podeExplicar={MODO_ARTEFATO}
-                  aoCurtir={(forcar) => setCurtidos((c) => (forcar && c.has(item.i) ? c : alternar(c, item.i)))}
+                  aoCurtir={(so) => curtirReel(chaveDoReel(aula.id, item.i), so)}
                   aoSalvar={() => {
                     if (salvos.has(item.i)) desmarcarRevisao(`${aula.id}-r${item.i}`);
-                    else marcarParaRevisar(cartaoDoReel(item.i, item.pronto));
+                    else marcarParaRevisar(cartaoDoReelDaAula(item.i, item.pronto));
                     setSalvos((s) => alternar(s, item.i));
                   }}
                   aoNaoEntendi={() => {
-                    marcarParaRevisar(cartaoDoReel(item.i, item.pronto));
+                    marcarParaRevisar(cartaoDoReelDaAula(item.i, item.pronto));
                     setSalvos((s) => new Set(s).add(item.i));
                   }}
                   aoMudo={() => setMudo((m) => !m)}
                   aoVelocidade={() => setVelocidade((v) => VELOCIDADES[(VELOCIDADES.indexOf(v) + 1) % VELOCIDADES.length])}
-                  aoTerminar={() => setTimeout(() => irPara(k + 1), 900)}
+                  aoTerminar={() => {
+                    marcarVisto(item.pronto.reel.conceito);
+                    setTimeout(() => irPara(k + 1), 900);
+                  }}
                 />
               )}
               {item.tipo === "quiz" && (
@@ -228,9 +243,19 @@ export const Feed = ({
                   ativo={ativo === k}
                   mudo={mudo}
                   sequencia={desempenho.sequencia}
-                  aoResponder={(acertou) => {
-                    contar(acertou, item.pronto.reel.conceito);
-                    if (!acertou) registrarErro(cartaoDoReel(item.i, item.pronto));
+                  aoResponder={(acertou, escolhida) => {
+                    const conceito = item.pronto.reel.conceito;
+                    contar({
+                      chave: `r${item.i}`,
+                      tipo: "reel",
+                      numero: item.i + 1,
+                      conceito,
+                      questao: { ...item.pronto.reel.quiz, conceito },
+                      escolhida,
+                      acertou,
+                    });
+                    marcarVisto(conceito);
+                    if (!acertou) registrarErro(cartaoDoReelDaAula(item.i, item.pronto));
                   }}
                   aoContinuar={() => irPara(k + 1)}
                 />
@@ -241,9 +266,17 @@ export const Feed = ({
                   etiqueta={`SIMULADO ${NOME_PROVA[aula.objetivo].toUpperCase()} · ${item.k + 1} DE ${totalSimulado}`}
                   conceito={item.questao.conceito}
                   cor={destaque(item.k + 2)}
-                  aoResponder={(acertou) => {
-                    contar(acertou, item.questao.conceito || construcao.titulo);
-                    if (!acertou) registrarErro(cartaoDaQuestao(item.k, item.questao));
+                  aoResponder={(acertou, escolhida) => {
+                    contar({
+                      chave: `s${item.k}`,
+                      tipo: "simulado",
+                      numero: item.k + 1,
+                      conceito: item.questao.conceito || construcao.titulo,
+                      questao: item.questao,
+                      escolhida,
+                      acertou,
+                    });
+                    if (!acertou) registrarErro(cartaoDaQuestao(aula, construcao.titulo, item.k, item.questao));
                   }}
                   aoContinuar={() => irPara(k + 1)}
                 />

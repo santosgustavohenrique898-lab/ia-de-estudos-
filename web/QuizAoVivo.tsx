@@ -14,7 +14,7 @@ type Props = {
   // Sem voz humana gravada para o reel, a pergunta é lida pela voz do navegador.
   falarEmVoz: boolean;
   sequencia: number;
-  aoResponder: (acertou: boolean) => void;
+  aoResponder: (acertou: boolean, escolha: number) => void;
   aoContinuar: () => void;
 };
 
@@ -36,7 +36,7 @@ export const QuizAoVivo = ({ quiz, conceito, cor, ativo, mudo, falarEmVoz, seque
     if (respondeu) return;
     setEscolha(i);
     const certo = i === quiz.correta;
-    aoResponder(certo);
+    aoResponder(certo, i);
     if (falarEmVoz) falar(`${certo ? "Mandou bem!" : "Quase!"} ${quiz.explicacao}`, { velocidade: 1.05, mudo, aoPalavra: () => {}, aoFim: () => {} });
   };
 

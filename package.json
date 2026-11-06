@@ -11,7 +11,8 @@
     "site:build": "vite build",
     "servidor": "tsx servidor/index.ts",
     "start": "vite build && tsx servidor/index.ts",
-    "site:artefato": "VITE_ARTEFATO=1 vite build --outDir ../dist-artefato"
+    "site:artefato": "VITE_ARTEFATO=1 vite build --outDir ../dist-artefato",
+    "teste": "npm run site:artefato && node e2e/fluxo.mjs"
   },
   "keywords": [],
   "author": "",
@@ -34,6 +35,7 @@
     "@types/node": "^26.6.6",
     "@types/react": "^18.3.31",
     "@types/react-dom": "^18.3.7",
+    "playwright": "^1.63.0",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2",
     "vite": "^8.3.5"

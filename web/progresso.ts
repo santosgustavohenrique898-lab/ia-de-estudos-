@@ -68,7 +68,8 @@ export type AulaSalva = {
 
 export type Fonte = "carregando" | "conta" | "aparelho" | "memoria";
 
-export type Progresso = { fonte: Fonte; perfil: Perfil; cartoes: Cartao[]; aulas: ResumoAula[] };
+// curtidas: os reels curtidos, como "<id da aula>-r<posição>". Aula com reel curtido sobe em "Suas aulas".
+export type Progresso = { fonte: Fonte; perfil: Perfil; cartoes: Cartao[]; aulas: ResumoAula[]; curtidas: string[] };
 
 // ---------- Datas (sempre no fuso do aparelho) ----------
 
@@ -274,7 +275,7 @@ const lerAulas = (v: unknown): ResumoAula[] =>
 
 // ---------- O estado e quem acompanha ----------
 
-let estado: Progresso = { fonte: "carregando", perfil: PERFIL_INICIAL, cartoes: [], aulas: [] };
+let estado: Progresso = { fonte: "carregando", perfil: PERFIL_INICIAL, cartoes: [], aulas: [], curtidas: [] };
 const ouvintes = new Set<() => void>();
 const avisar = () => ouvintes.forEach((f) => f());
 
@@ -315,6 +316,7 @@ export function iniciarProgresso() {
       perfil: lerPerfil(salvo?.perfil),
       cartoes: lerCartoes(salvo?.cartoes),
       aulas: lerAulas(salvo?.aulas),
+      curtidas: Array.isArray(salvo?.curtidas) ? (salvo.curtidas as unknown[]).filter((c): c is string => typeof c === "string") : [],
     };
     for (const f of antesDeCarregar) p = { ...f(p), fonte: escolhido.fonte };
     const mudouAntes = antesDeCarregar.length > 0;
@@ -351,7 +353,7 @@ const MAX_AULAS = 20;
 
 function corpoDoProgresso(p: Progresso): Record<string, unknown> {
   let cartoes = p.cartoes;
-  const corpo = () => ({ tipo: "progresso", versao: 1, perfil: p.perfil, cartoes, aulas: p.aulas });
+  const corpo = () => ({ tipo: "progresso", versao: 1, perfil: p.perfil, cartoes, aulas: p.aulas, curtidas: p.curtidas });
   // Grande demais: saem primeiro os cartões já dominados, depois os mais antigos.
   while (cartoes.length > 0 && JSON.stringify(corpo()).length > LIMITE_CARACTERES) {
     const i = cartoes.findIndex((c) => c.dominado);
@@ -503,7 +505,9 @@ export function salvarAula(a: AulaSalva) {
   mudar((p) => {
     const todas = [resumo, ...p.aulas.filter((x) => x.id !== a.id)].sort((x, y) => y.criadaEm - x.criadaEm);
     for (const velha of todas.slice(MAX_AULAS)) naFila(`aula-${velha.id}`, () => banco.apagar(`aula-${velha.id}`));
-    return { ...p, aulas: todas.slice(0, MAX_AULAS) };
+    const ficam = todas.slice(0, MAX_AULAS);
+    const ids = new Set(ficam.map((x) => x.id));
+    return { ...p, aulas: ficam, curtidas: p.curtidas.filter((c) => ids.has(c.slice(0, c.lastIndexOf("-r")))) };
   });
   naFila(`aula-${a.id}`, () => gravarComRepeticao(`aula-${a.id}`, () => ({ tipo: "aula", ...a })));
 }
@@ -530,6 +534,21 @@ export async function abrirAula(id: string): Promise<AulaSalva | null> {
 
 export function apagarAula(id: string) {
   aulasDaVisita.delete(id);
-  mudar((p) => ({ ...p, aulas: p.aulas.filter((a) => a.id !== id) }));
+  mudar((p) => ({ ...p, aulas: p.aulas.filter((a) => a.id !== id), curtidas: p.curtidas.filter((c) => !c.startsWith(`${id}-`)) }));
   naFila(`aula-${id}`, () => banco.apagar(`aula-${id}`));
 }
+
+// ---------- Curtidas ----------
+
+export const chaveDoReel = (aulaId: string, posicao: number) => `${aulaId}-r${posicao}`;
+
+// Curte ou descurte um reel. Com "so" = true (dois toques no reel), só curte: nunca descurte.
+export function curtirReel(chave: string, so = false) {
+  mudar((p) => {
+    const tem = p.curtidas.includes(chave);
+    if (tem && so) return p;
+    return { ...p, curtidas: tem ? p.curtidas.filter((c) => c !== chave) : [...p.curtidas, chave] };
+  });
+}
+
+export const aulaCurtida = (p: Progresso, aulaId: string) => p.curtidas.some((c) => c.startsWith(`${aulaId}-r`));

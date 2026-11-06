@@ -11,6 +11,22 @@ import { criarAula, ouvirAula, type EventoServidor, type ReelPronto } from "./ap
 import { narracaoDoNavegador } from "./artefato";
 import { abrirAula, iniciarProgresso, salvarAula, type Questao } from "./progresso";
 
+// Uma resposta da aula: o que o aluno marcou e qual era a certa, para a correção no resultado.
+export type RespostaDada = {
+  // "r0" é a pergunta do 1º reel; "s2" é a 3ª questão do simulado.
+  chave: string;
+  tipo: "reel" | "simulado";
+  // Posição dentro do tipo, a partir de 1.
+  numero: number;
+  conceito: string;
+  questao: Questao;
+  // A alternativa marcada, na ordem em que a questão aparece na correção.
+  escolhida: number;
+  acertou: boolean;
+  // Acertou depois, em "Refazer as que errei". Não muda a nota da aula.
+  refeita?: boolean;
+};
+
 export type Desempenho = {
   xp: number;
   acertos: number;
@@ -18,6 +34,9 @@ export type Desempenho = {
   sequencia: number;
   melhorSequencia: number;
   revisar: string[];
+  // Conceitos dos reels que o aluno assistiu até o fim ou cuja pergunta respondeu.
+  vistos: string[];
+  respostas: RespostaDada[];
 };
 
 // A aula chega aos poucos: cada posição é um reel pronto, descartado na checagem ou ainda em produção (null).
@@ -37,7 +56,16 @@ export type Construcao = {
 // A aula aberta agora. O id liga a aula salva e os cartões de revisão que saem dela.
 export type AulaAtual = { id: string; objetivo: Objetivo; criadaEm: number; salva: boolean };
 
-const DESEMPENHO_INICIAL: Desempenho = { xp: 0, acertos: 0, respondidas: 0, sequencia: 0, melhorSequencia: 0, revisar: [] };
+const DESEMPENHO_INICIAL: Desempenho = {
+  xp: 0,
+  acertos: 0,
+  respondidas: 0,
+  sequencia: 0,
+  melhorSequencia: 0,
+  revisar: [],
+  vistos: [],
+  respostas: [],
+};
 const CONSTRUCAO_INICIAL: Construcao = {
   etapa: null,
   titulo: "",
@@ -199,7 +227,7 @@ const App = () => {
         />
       );
     case "resumo":
-      return <Resumo aula={aula!} construcao={construcao} desempenho={desempenho} aoNovaAula={voltar} />;
+      return <Resumo aula={aula!} construcao={construcao} desempenho={desempenho} setDesempenho={setDesempenho} aoNovaAula={voltar} />;
     case "revisao":
       return <Revisao aoSair={() => setTela("inicio")} />;
   }
