@@ -3,6 +3,7 @@ import { destaque } from "../src/remotion/tema";
 import { Fundo3D, Nucleo } from "./Efeitos3D";
 import { Pergunta } from "./Pergunta";
 import { textoDaMeta } from "./Feed";
+import { embaralhar, embaralharQuestao } from "./questoes";
 import {
   INTERVALOS,
   pendentes,
@@ -15,26 +16,6 @@ import {
 } from "./progresso";
 
 const MAX_POR_SESSAO = 20;
-
-function embaralhar<T>(lista: T[]): T[] {
-  const l = [...lista];
-  for (let i = l.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [l[i], l[j]] = [l[j], l[i]];
-  }
-  return l;
-}
-
-// Troca as alternativas de lugar, para a pessoa lembrar a resposta e não a posição dela.
-function embaralharQuestao(q: Questao): Questao {
-  const ordem = embaralhar(q.alternativas.map((_, i) => i));
-  return {
-    ...q,
-    alternativas: ordem.map((i) => q.alternativas[i]),
-    porQue: q.porQue ? ordem.map((i) => q.porQue![i]) : undefined,
-    correta: ordem.indexOf(q.correta),
-  };
-}
 
 const quandoVolta = (c: Cartao, acertou: boolean) => {
   if (!acertou) return "Ela volta amanhã para você tentar de novo.";

@@ -101,6 +101,11 @@ const aprendi = await pagina.locator(".aprendi:not(.faltou) .aprendi-item b").al
 const faltou = await pagina.locator(".aprendi.faltou .aprendi-item").count();
 conferir(aprendi.length === 1 && aprendi[0] === "Fotossíntese", `"O que você aprendeu" mostra só o reel visto (${aprendi.join(", ")})`);
 conferir(faltou === 5, `"Você ainda não viu" lista os 5 reels pulados (listou ${faltou})`);
+conferir((await pagina.locator(".heroi svg.medalha").count()) === 1, "o resultado mostra a medalha desenhada");
+const medalha = await pagina.locator(".heroi-titulo").innerText();
+conferir(medalha === "Em treino", `responder 1 pergunta e pular o resto não dá medalha (${medalha})`);
+conferir((await pagina.locator(".heroi-acao").innerText()).includes("que faltaram"), "o resultado oferece responder as que faltaram");
+conferir((await pagina.locator(".gabarito .bolha").count()) >= 6, "a correção mostra o gabarito das perguntas da aula");
 
 // 4. De volta ao início, a aula curtida tem o coração e continua curtida ao reabrir.
 await pagina.click("text=Estudar outra matéria");

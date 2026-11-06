@@ -114,6 +114,7 @@ async function textoDoPdf(arquivo: File): Promise<string> {
 const EXEMPLO_REEL = JSON.stringify({
   tipo: "reel",
   conceito: "Evaporação",
+  emoji: "💧",
   cenas: [
     { template: "gancho", fala: "Por que a roupa seca no varal, se ninguém tira a água dela?", titulo: "Pra onde vai a água?", subtitulo: "ela não some, ela sobe" },
     {
@@ -151,6 +152,8 @@ const FORMATO = `Formato: responda só com linhas JSON, um objeto completo por l
 
 ${CENAS}
 
+Cada reel tem um "emoji": um só emoji que represente o conceito, para a capa do reel (como 💧 para evaporação ou ⚖️ para leis). Nada de bandeiras.
+
 O quiz de cada reel: {"pergunta": "...", "alternativas": ["...", "...", "...", "..."], "correta": 0, "explicacao": "..."}. São exatamente 4 alternativas curtas; "correta" é a posição da certa, de 0 a 3 (varie essa posição entre os reels); "explicacao" é uma frase dizendo por que ela está certa, sem citar letras.
 
 Exemplo de uma linha de reel (só mostra o formato; o assunto é outro e o seu reel deve ser mais completo):
@@ -182,8 +185,8 @@ function pedidoDaAula(aula: AulaPreparada) {
     : `Tarefa: monte uma aula em reels com exatamente ${n} conceitos sobre esse assunto, na ordem certa para aprender: do mais básico ao mais avançado. Se o pedido for amplo ou vago, escolha o recorte que mais cai em prova para esse público.`;
   const quais =
     k < n
-      ? `2. Depois, um reel por linha, SÓ para os ${k} primeiros conceitos do plano, na ordem (os outros reels são escritos à parte): {"tipo":"reel","conceito":"...","cenas":[...],"quiz":{...}}`
-      : `2. Depois, um reel por linha, na ordem do plano: {"tipo":"reel","conceito":"...","cenas":[...],"quiz":{...}}`;
+      ? `2. Depois, um reel por linha, SÓ para os ${k} primeiros conceitos do plano, na ordem (os outros reels são escritos à parte): {"tipo":"reel","conceito":"...","emoji":"...","cenas":[...],"quiz":{...}}`
+      : `2. Depois, um reel por linha, na ordem do plano: {"tipo":"reel","conceito":"...","emoji":"...","cenas":[...],"quiz":{...}}`;
   return `${contexto(aula)}
 
 ${tarefa}
@@ -205,7 +208,7 @@ ${plano.conceitos.map((c, i) => `${i + 1}. ${c}`).join("\n")}
 
 Tarefa: escreva os reels destes conceitos, um por linha, nesta ordem: ${posicoes.map((i) => `"${plano.conceitos[i]}"`).join(", ")}.
 Os outros conceitos do plano têm reels próprios: não repita o que eles explicam.
-Cada linha: {"tipo":"reel","conceito":"...","cenas":[...],"quiz":{...}}
+Cada linha: {"tipo":"reel","conceito":"...","emoji":"...","cenas":[...],"quiz":{...}}
 
 ${FORMATO}`;
 }
@@ -326,12 +329,22 @@ function normalizarQuiz(o: unknown): Reel["quiz"] | null {
   return { pergunta, alternativas, correta, explicacao: texto(o.explicacao) };
 }
 
+// O emoji da capa do reel: só um emoji curto (sem texto junto); fora disso, a capa fica sem.
+export function normalizarEmoji(v: unknown): string | undefined {
+  const e = texto(v);
+  if (!e || e.length > 12 || /[\p{L}\p{N}]/u.test(e.replace(/[\u{FE0F}\u{200D}]/gu, ""))) return undefined;
+  return /\p{Extended_Pictographic}/u.test(e) ? e : undefined;
+}
+
 export function normalizarReel(o: unknown): Reel | null {
   if (!ehObjeto(o)) return null;
   const cenas = (Array.isArray(o.cenas) ? o.cenas : []).map(normalizarCena).filter((c): c is Cena => c !== null);
   const quiz = normalizarQuiz(o.quiz);
   if (cenas.length < 3 || !quiz) return null;
-  return { conceito: texto(o.conceito), cenas: cenas.slice(0, 7), quiz };
+  const reel: Reel & { emoji?: string } = { conceito: texto(o.conceito), cenas: cenas.slice(0, 7), quiz };
+  const emoji = normalizarEmoji(o.emoji);
+  if (emoji) reel.emoji = emoji;
+  return reel;
 }
 
 // ---------- A geração ----------

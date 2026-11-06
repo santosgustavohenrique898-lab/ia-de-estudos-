@@ -32,6 +32,8 @@ type Props = {
   aoMudo: () => void;
   aoVelocidade: () => void;
   aoTerminar: () => void;
+  // O que aparece quando o reel acaba (no feed, a dica de rolar para a pergunta).
+  textoFim?: string;
 };
 
 // Reel tocado ao vivo no navegador: a animação vem dos mesmos templates do vídeo exportado
@@ -247,7 +249,7 @@ export const ReelAoVivo = (p: Props) => {
       )}
 
       {pausado && !explicando && <div className="icone-pausa">▶</div>}
-      {terminou && <div className="repetir">↻ toque para ver de novo · role para a pergunta ↑</div>}
+      {terminou && <div className="repetir">{p.textoFim ?? "↻ toque para ver de novo · role para a pergunta ↑"}</div>}
       {coracao > 0 && (
         <div key={coracao} className="coracao-explode">
           ❤

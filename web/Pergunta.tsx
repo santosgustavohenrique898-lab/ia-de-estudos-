@@ -13,7 +13,7 @@ type Props = {
   // Na revisão: quando essa pergunta volta.
   nota?: string | null;
   textoContinuar?: string;
-  aoResponder: (acertou: boolean) => void;
+  aoResponder: (acertou: boolean, escolha: number) => void;
   aoContinuar: () => void;
 };
 
@@ -38,7 +38,7 @@ export const Pergunta = ({ questao, etiqueta, conceito, cor, lembrete, nota, tex
   const escolher = (i: number) => {
     if (respondeu) return;
     setEscolha(i);
-    aoResponder(i === questao.correta);
+    aoResponder(i === questao.correta, i);
   };
 
   return (

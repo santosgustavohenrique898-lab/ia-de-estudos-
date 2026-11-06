@@ -8,9 +8,17 @@
    - **texto ou PDF**: usa o material do aluno;
    - planeja os conceitos, escreve cada reel, confere cada frase contra o material (reel reprovado é reescrito ou descartado) e grava a voz humana (ElevenLabs).
 3. Cada reel aparece no feed assim que fica pronto: animação, voz, legenda palavra por palavra, toque para pausar, dois toques para curtir, "não entendi", salvar e velocidade.
-4. Depois de cada reel vem uma pergunta valendo XP. No final, o resumo com acertos e o que revisar.
+4. Depois de cada reel vem uma pergunta valendo XP. No final, a tela de resultado: medalha, correção do simulado e o que revisar.
 
 Sem chave da ElevenLabs, a voz é a do navegador (robótica). Sem chave do Claude, o site não gera aulas.
+
+## Tela de resultado (`web/Resumo.tsx`)
+
+- Medalha (bronze, prata, ouro) ou troféu de gabarito, desenhados em `web/Medalha.tsx`. A nota conta todas as perguntas da aula, como numa prova: pergunta sem resposta ainda não vale ponto, então responder uma e pular o resto não dá ouro. Confete na prata, no ouro e no gabarito, e de novo quando a medalha sobe.
+- XP e nível com barra animada, ofensiva (ou a meta do dia, se a ofensiva ainda não começou) e as conquistas da aula (`web/resultado.ts`).
+- Correção (`web/Correcao.tsx`): gabarito do simulado e das perguntas dos reels (tocar no número leva à questão), acertos por assunto com o ponto fraco, e cada erro aberto com a alternativa marcada, a certa, o porquê das duas e a frase do reel para lembrar.
+- "Refazer as que errei" (alternativas em outra ordem, +5 XP, não muda a nota) e "Responder as que faltaram" (vale como resposta da aula), sem sair do resultado (`web/Desafio.tsx`).
+- Capas dos reels (`web/Capas.tsx`) com o emoji do conceito e a frase de abertura. O cartão vira e mostra o que levar para a prova; o ▶ toca o reel por cima do resultado (`web/ReelSobreposto.tsx`).
 
 ## Logo
 
@@ -43,7 +51,7 @@ Para gerar os arquivos dessa versão: `npm run site:artefato` (sai em `dist-arte
 
 ## Teste automático
 
-`npm run teste` compila a versão do Artifact e percorre o fluxo inteiro num navegador, com o Claude simulado (não gasta nada): gera uma aula de 6 reels, confere que a segunda metade é pedida em paralelo e que cada reel fica na posição certa, curte um reel, responde, pula o resto e confere o resultado e "Suas aulas". Na primeira vez, rode `npx playwright install chromium`.
+`npm run teste` compila a versão do Artifact e percorre o fluxo inteiro num navegador, com o Claude simulado (não gasta nada): gera uma aula de 6 reels, confere que a segunda metade é pedida em paralelo e que cada reel fica na posição certa, curte um reel, responde, pula o resto e confere o resultado (medalha, gabarito e o que faltou) e "Suas aulas". Na primeira vez, rode `npx playwright install chromium`.
 
 ## Rodar no seu computador
 
